@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-25
-- 上次更新者：Opus（本文创建）
+- 上次更新者：Claude（修 P2-1 Radar.swift sustainabilityScore 默认 calendar）
 
 ---
 
@@ -19,6 +19,7 @@
 |---|---|---|---|---|
 | **iOS** | | | | |
 | 1a | Algorithms foundation（XIRR / NAV / Metrics / Radar / StrategyIntent + 10 单测） | ✅ done | `2a88ed8` + `7c8fb03` review | GPT 主笔 / Opus review |
+| 1a-fix | P2-1 Radar.swift sustainabilityScore 删除 calendar 参数（强制 Asia/Shanghai）+ deterministic 回归测试 | ⏳ Codex 复审第二轮 | 本次 | Claude |
 | 1b-1 | App Shell（xcodegen + 两 Tab + Widgets extension 占位） | ✅ done | `7743d4a` | Opus |
 | 1b-2 | DesignSystem / BNTokens（color / typography / spacing token 层） | ✅ done | `3a38419` | Opus |
 | 1b-3 | Holdings mock UI（用 token 画 Card / Chip / Row 第一片 + ambient gradient 落 RootView） | 🔜 next | — | Opus |
@@ -33,7 +34,7 @@
 | be-β | `portfolio/history` 真实化（当前 mock） | 🔜 待排 | — | GPT |
 | be-γ | 雷达 / 回测计算服务化 | 待排 | — | GPT |
 | **Meta** | | | | |
-| arch-§8 回填 | xcodegen / iOS 17.4 / bundle id 写进 ARCH §8 | 🔜 待排 | — | GPT |
+| arch-§8 回填 | xcodegen / iOS 17.4 / Swift 6.0 / bundle id / targets 写进 ARCH §8（v1.3） | ✅ done | 本次 | GPT |
 
 ---
 
@@ -41,6 +42,10 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-25 · sustainability 月度分桶**强制 Asia/Shanghai**，`sustainabilityScore` API 删除 calendar 参数（不留默认值留口子）。产品定位决定 —— 国内基金工具按非 CN 时区看盘无意义 · radar.v1.md v1.2 / Radar.swift / Codex P2-1 二轮 review
+- 2026-04-25 · 雷达三快照锚点：日历天（7/30）→ **交易日 5/22**；BNCalendar 不需要"往前推 N 交易日"，由 RadarService 层用 `RadarConfig.lastWeek/lastMonthTradingDayOffset` 处理 · radar.v1.md v1.1
+- 2026-04-25 · 雷达六维窗口期：**差异化默认（180/90 混合）+ RadarConfig 字段进 Pro 可调**；明确拒绝"统一 90 天" · radar.v1.md §4.2 决议 (b)
+- 2026-04-25 · sustainability 公式落地：4 子分 weighted（0.25/0.30/0.25/0.20）+ 8 个阈值字段，全部进 RadarConfig · radar.v1.md §3.6
 - 2026-04-25 · 跳过 Light mode 适配（设计稿 dark-only），等真有需要再说 · 本 session
 - 2026-04-25 · `.bn-root` ambient radial gradient 落到 RootView ZStack 底层（组件级），不进 token namespace · 本 session
 - 2026-04-25 · 雷达六维色阶用 accent (`#E3B15C`) 单色 + 透明度梯度，留到雷达图 commit 落 token · 本 session
@@ -78,16 +83,19 @@
 
 > 只列**尚未裁定**的；裁定后挪到 §2 决议簿。
 
-- （暂无 —— 本 session 三个 design questions 已全部裁定）
-- 雷达窗口锚点是否改交易日（5/22）+ 六维窗口期是否统一 90 天 → 见 [docs/worklog/2026-04-25_radar-six-dimensions-review.md](worklog/2026-04-25_radar-six-dimensions-review.md)，等 GPT 也看一眼再定。
+- （暂无 Elvis 待答）
+
+**已修复 / 待 Codex 复审**：
+- ✅ P2-1 `Radar.swift` `sustainabilityScore` **删除 calendar 参数硬编码 BNCalendar.calendar**（Elvis 2026-04-25 决议升级方案，比原计划"改默认值"更彻底）；新增 `sustainabilityIsTimezoneStable` 确定性回归测试。详见 [radar-calendar-default-fix worklog](worklog/2026-04-25_ios_radar-calendar-default-fix.md)，radar.v1.md → v1.2，等 Codex 复审第二轮。
+- ⏳ P2-2（流程）radar v1.1 worklog `## Review` 待显式填 ✅/🔧/⚠️ 关闭。P2-1 修完顺势可填。
 
 ---
 
 ## 5. 下一步
 
-- **iOS（Opus）**：commit D · Holdings mock UI（含 ambient gradient 落 RootView）
+- **iOS（Opus）**：commit D · Holdings mock UI（含 ambient gradient 落 RootView）。雷达代码与文档已 v1.1 同步。
 - **Backend（GPT）**：`portfolio/history` 真实化（待 GPT 自排时机）
-- **Meta（GPT）**：ARCH §8 回填（xcodegen / 17.4 / bundle id 写进架构文档），与 commit D 互不阻塞
+- **Meta**：ARCH §8 回填 ✅ 完成（v1.3）。雷达 v1.1 ✅ 完成。下一个 Meta 任务待 Opus 1b 全部落完时校对 ARCH §3 目录骨架"最终态" vs "已落地"差异。
 
 ---
 

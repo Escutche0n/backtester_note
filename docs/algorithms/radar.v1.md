@@ -65,12 +65,14 @@ struct StrategyRadarSnapshot {
 }
 ```
 
-**锚点定义**：
+**锚点定义（Elvis 2026-04-25 ✅ 改交易日）**：
 - `current` —— `anchorDate = today`
-- `lastWeek` —— `anchorDate = today − 7 days`
-- `lastMonth` —— `anchorDate = today − 30 days`
+- `lastWeek` —— `anchorDate = today − 5 trading days`（实现锚点 `RadarConfig.lastWeekTradingDayOffset = 5`）
+- `lastMonth` —— `anchorDate = today − 22 trading days`（实现锚点 `RadarConfig.lastMonthTradingDayOffset = 22`）
 
-**计算窗口**：每个 snapshot 用 **anchor 之前的 N 天数据**（N 由维度决定，见 §3）。
+**为什么交易日**：A 股每年约 240–250 个交易日，5 ≈ 一周、22 ≈ 一月。日历天容易在长假后污染窗口（黄金周后"上周"可能截到 12 个日历日），交易日更稳定。
+
+**计算窗口**：每个 snapshot 用 **anchor 之前的 N 天数据**（N 由维度决定，见 §3 / §4）。
 
 UI 叠加显示：bottom→top = lastMonth → lastWeek → current（[bn-holdings.jsx](../design/project/lib/bn-holdings.jsx) `RadarCard`）。
 
@@ -145,20 +147,49 @@ strategyAlignmentScore = clamp([
 
 | 项 | 值 |
 |---|---|
-| 输入 | NAV 序列 anchor 前 N=180 天 |
+| 输入 | 当期 NAV 序列 anchor 前 N=180 天 + 上一期 NAV 序列（用于改善度子分）|
 | 输出 | `[0, 1]` |
-| 评估 | 滚动窗口正收益占比 + 收益与风险比 |
-| 旧 app 函数 | （Phase 1a port 时定位行号）|
+| 实现 | [`RadarScoring.sustainabilityScore()`](../../ios/Sources/BacktesterNoteAlgorithms/Radar.swift) |
+
+**时区策略（Elvis 2026-04-25 决议）**：sustainability 月度分桶**强制** Asia/Shanghai，[`sustainabilityScore`](../../ios/Sources/BacktesterNoteAlgorithms/Radar.swift) **不暴露 calendar 参数**。理由：产品定位是国内基金复盘工具，按非 CN 时区看盘没有合法语义；不暴露 calendar 参数 = 在 API 表面就堵死"传错时区"漂移路径。这是 [`nav.v1.md` §0](nav.v1.md) "全 App 统一 Asia/Shanghai 自然日"红线在 sustainability 上的兑现点。
+
+**完整公式**（已实现，与旧 app 数字对齐留 Phase 1c 真实数据接通时补 `## Algorithm drift` 校验）：
+
+```
+sustainabilityScore = weightedSum([
+    (positiveDayScore,   0.25),
+    (positiveMonthScore, 0.30),
+    (dispersionScore,    0.25),
+    (improvementScore,   0.20),
+])
+```
+
+四个子分：
+
+| 子分 | 输入 | 公式 | 阈值（normalize lower → upper）|
+|---|---|---|---|
+| `positiveDayScore` | 当期日收益序列 | `count(daily > 0) / total` | `0.38 → 0.68` |
+| `positiveMonthScore` | 当期按月聚合的月收益 | `count(monthly > 0) / total` | `0.30 → 0.85` |
+| `dispersionScore` | 当期所有正收益日 | `0.8 − topFiveShare`，`topFiveShare = sum(top5正收益) / sum(all正收益)` | `-0.20 → 0.80` |
+| `improvementScore` | 当期 vs 上期 positiveDayRatio | `currentRatio − previousRatio`（上期为空则取 0 改善）| `-0.15 → 0.15` |
+
+**normalize 规则**：`(value − lower) / (upper − lower)`，超界 clamp 到 `[0,1]`；若 `upper ≤ lower` 返回 `0.5`。
+
+**月度聚合**：按 `Calendar.dateComponents([.year, .month])` 分桶，每桶取首末两个 NAV 算 `end/start − 1`，桶内首末必须 NAV > 0。
+
+**所有阈值外化到 [`RadarConfig`](../../ios/Sources/BacktesterNoteAlgorithms/Radar.swift) 8 个字段**（见 §4），Pro 用户可调。
 
 ---
 
 ## 4. 配置外化
 
-`ios/Config/RadarConfig.swift`（替代旧硬编码）：
+实现位置：[`ios/Sources/BacktesterNoteAlgorithms/Radar.swift`](../../ios/Sources/BacktesterNoteAlgorithms/Radar.swift) `public struct RadarConfig`。
+
+### 4.1 字段（实际默认值与代码一致）
 
 ```swift
-struct RadarConfig: Codable {
-    // 各维度计算窗口（天）
+public struct RadarConfig: Codable, Equatable, Sendable {
+    // ── 各维度计算窗口（天）── Elvis 2026-04-25 决议 (b)：差异化默认
     var excessQualityWindowDays:     Int = 180
     var strategyExecutionWindowDays: Int = 90
     var tradingDisciplineWindowDays: Int = 90
@@ -166,7 +197,11 @@ struct RadarConfig: Codable {
     var styleStabilityWindowDays:    Int = 180
     var sustainabilityWindowDays:    Int = 180
 
-    // strategyExecution 子分权重
+    // ── 三快照交易日锚点 ── Elvis 2026-04-25 决议
+    var lastWeekTradingDayOffset:  Int = 5
+    var lastMonthTradingDayOffset: Int = 22
+
+    // ── strategyExecution 子分权重（PRD §3.4 strategyExecution 维度内部）──
     var subWeightWeeklyContribution:    Double = 0.22
     var subWeightUnderweightFunding:    Double = 0.22
     var subWeightThresholdRepair:       Double = 0.18
@@ -174,15 +209,40 @@ struct RadarConfig: Codable {
     var subWeightClassifiedAverage:     Double = 0.14
     var subWeightEmergency:             Double = 0.10
 
-    // 关键阈值（详见 §3 各维度）
+    // ── excessQuality 阈值 ──
     var excessQualityFullMarkAnnualExcess: Double = 0.05
     var excessQualityZeroAnnualExcess:     Double = -0.05
 
-    static let `default` = RadarConfig()
+    // ── sustainability 4 个子分 × 上下界 = 8 个阈值 ──
+    var sustainabilityPositiveDayLower:    Double = 0.38
+    var sustainabilityPositiveDayUpper:    Double = 0.68
+    var sustainabilityPositiveMonthLower:  Double = 0.30
+    var sustainabilityPositiveMonthUpper:  Double = 0.85
+    var sustainabilityDispersionLower:     Double = -0.20
+    var sustainabilityDispersionUpper:     Double = 0.80
+    var sustainabilityImprovementLower:    Double = -0.15
+    var sustainabilityImprovementUpper:    Double = 0.15
+
+    public static let `default` = RadarConfig()
 }
 ```
 
-**默认值锁死与旧 app 一致**。Pro 用户允许在 Settings → 数据维护 改这些参数（Phase 3）；Free 永远 default。
+### 4.2 Free / Pro 边界（Elvis 2026-04-25 ✅ 决议 (b)）
+
+| 用户 | 6 个 `*WindowDays` | 三快照交易日锚点 | 子分权重 / 阈值 |
+|---|---|---|---|
+| Free | 锁定默认（差异化 180/90 混合）| 锁定默认（5/22）| 锁定默认 |
+| Pro | **可调**（Settings → 数据维护 → 雷达高级）| **可调** | **可调** |
+
+**为什么不统一 90 天**（决策记录，Phase 5 重审前不再讨论）：
+- 长期投资工具，180 天给慢变量（风险 / 风格 / 持续性）足够样本量
+- 90 天对短变量（执行 / 纪律）足够，与 strategyExecution 内的"周定投达标率"自然吻合
+- "六维统一 90 天"看似简化体验，实际是把所有维度都"瘦"成 90 天但暗中失精度，比"差异化 + 脚注解释"更不诚实
+- Pro 用户可调窗口当作"高级诊断"卖点之一，与 PRD §4 Free/Pro 边界一致
+
+### 4.3 配置变更触发
+
+任何 `RadarConfig` 字段变化 → `CacheService.invalidate(domain: "radar")` → 雷达全重算。三快照单独缓存（key 含 `lastWeekTradingDayOffset` / `lastMonthTradingDayOffset`），改其一只重算对应快照。
 
 ---
 
@@ -215,3 +275,12 @@ struct RadarConfig: Codable {
 
 - v1 (2026-04-25) — 初版。修正 PRD v2 §3.4 的权重错置；冻结六维定义、三快照模型、配置外化。详细打分函数公式留 Phase 1a port 时与旧 app 单测对齐补完 v1.1。
 - v1 (2026-04-25) — 雷达总分沿用简单平均；加权方案推到 v2/v3。
+- v1.1 (2026-04-25) — Elvis 雷达窗口 / 锚点决议落地（与 Opus phase1b 代码同步）：
+  - §2 三快照锚点：日历天（7/30）→ **交易日 5/22**（`lastWeekTradingDayOffset` / `lastMonthTradingDayOffset`）
+  - §3.6 sustainability：从 stub → 完整公式（4 子分 + 阈值，与 [`Radar.swift`](../../ios/Sources/BacktesterNoteAlgorithms/Radar.swift) 一致）
+  - §4 RadarConfig：扩展到 22 字段（6 windowDays + 2 交易日锚点 + 6 strategyExecution 子权重 + 2 excessQuality 阈值 + 8 sustainability 阈值）
+  - §4.2 Free/Pro 边界落决议 (b)：差异化默认 + Pro 可调；明确拒绝"六维统一 90 天"
+  - 实现锚点全部指向 `ios/Sources/BacktesterNoteAlgorithms/Radar.swift`
+- v1.2 (2026-04-25) — Codex P2-1 review + Elvis 决议：sustainability 月度分桶强制 Asia/Shanghai：
+  - §3.6 加"时区策略"段落，明示 `sustainabilityScore` **不暴露 calendar 参数**
+  - 实现层：`monthlyReturns` 删除 calendar 参数，硬编码 `BNCalendar.calendar`

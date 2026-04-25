@@ -440,13 +440,16 @@ enum BNColor {
 | 项 | 决定 |
 |---|---|
 | 最低 iOS | **iOS 17.4+**（覆盖率与现代 SwiftUI 能力折中；Liquid Glass 视为渐进增强，见 §7）|
-| 包管理 | SwiftPM only。**不引入** CocoaPods / Carthage |
+| Swift 版本 | **6.0**，`SWIFT_STRICT_CONCURRENCY=complete`（落在 [`ios/project.yml`](../../ios/project.yml)）|
+| 包管理 | SwiftPM only。**不引入** CocoaPods / Carthage。算法层用**本地 SwiftPM package**（`ios/Package.swift`，product `BacktesterNoteAlgorithms`），由 App / Widgets / Tests 三个 target 共同依赖 |
 | 三方依赖（运行时）| 默认 0 个。AGENTS.md 红线 2。例外按 PRD §5 红线 2 走 |
 | 开发期工具 | **SwiftLint** + **swift-format**（iOS）；**ruff** + **black**（如未来 backend 进新仓，Python）。开发期工具不进二进制，不违反零三方红线。配置文件落 `.swiftlint.yml` / `.swift-format` |
-| Bundle ID | App: `com.chenyuefu.backtester-note` · Widgets: `com.chenyuefu.backtester-note.widgets` |
+| Bundle ID | App: `com.chenyuefu.backtester-note` · Widgets: `com.chenyuefu.backtester-note.widgets`（来自 [`ios/project.yml`](../../ios/project.yml) `bundleIdPrefix: com.chenyuefu`）|
 | App Group | `group.com.chenyuefu.backtester-note` |
-| Xcode Scheme | 一个 App scheme + 一个 Widget scheme + 一个 Tests scheme |
-| Xcode 工程顶层目录 | **Phase 1b 起 Xcode 工程时由 Opus 评估并写 worklog 决定**：硬扛 `ios/` 还是顺 Xcode 默认 `BacktesterNote/`。倾向后者以减少 `@main` 路径 / build settings 摩擦。决定后回填本表 |
+| Xcode 工程生成 | **xcodegen**（spec 在 [`ios/project.yml`](../../ios/project.yml)）。`BacktesterNote.xcodeproj` **不入库**；fresh clone 跑 `cd ios && xcodegen generate` 重生成 |
+| Xcode 工程顶层目录 | **`ios/`**（Opus 2026-04-25 决议：硬扛 `ios/`，不顺 Xcode 默认 `BacktesterNote/`。子目录 `App/` `DesignSystem/` `Sources/BacktesterNoteAlgorithms/` `WidgetsExt/` `Tests/`）|
+| Targets | `BacktesterNote` (app) · `BacktesterNoteWidgets` (widget extension) · `BacktesterNoteAlgorithms` (本地 SwiftPM package) · `BacktesterNoteTests` |
+| Schemes | 三个：app + widgets + tests（按 target 自动生成）|
 | Concurrency | Swift Concurrency（async/await + actor）。Combine 仅用于 `@Published` 桥接 |
 | Logging | `os.Logger`，不接三方 |
 | Analytics | 本地 SQLite 埋点（PRD §8），永不接三方 |
@@ -531,4 +534,10 @@ PRD §9 的 Phase 1 在工程上拆为三个可独立 ship 的子阶段，避免
   - §8 加 SwiftLint / swift-format 行；加 Xcode 工程顶层目录决议待 Phase 1b 在 worklog 落地
   - §9 引用矩阵：4 份算法文档已交付（nav/radar/backtest/strategy_intent），api 与 legacy_fundmvp_mapping 改为 stub 状态；Phase 1a/3/1c 解锁条件明确化
   - §10 Phase 1 拆为 1a/1b/1c 三个可独立 ship 子阶段
+- v1.3 (2026-04-25) — §8 工程基础设施回填实际落地参数（GPT 按 Opus 1b-1 决议归档）：
+  - 顶层目录决议：`ios/`（硬扛，不顺 Xcode 默认）
+  - xcodegen 生成 spec：[`ios/project.yml`](../../ios/project.yml)；`.xcodeproj` 不入库
+  - Swift 6.0 + strict concurrency complete
+  - 算法层落为本地 SwiftPM package（`BacktesterNoteAlgorithms`）共四 target 共享
+  - Targets / Schemes 数量与命名落表
 - v1.3 (2026-04-25) — Elvis 决议落地：最低 iOS 从 `16+` 提升到 `17.4+`。
