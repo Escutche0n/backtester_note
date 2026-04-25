@@ -246,7 +246,7 @@ HoldingsViewModel.load()
 View 渲染（TotalHeader / OverviewPanel / NavCard / RadarCard / HoldingsList）
 ```
 
-**NAV 可信度状态机**（PRD §3.2）由 `NAV.swift` 在每个点上打 tag，View 层只负责按 tag 决定半透明/灰/⚠ 标记。
+**NAV 可信度状态机**（PRD §3.2）由 `NAVService` 根据数据来源在每个点上打 tag；`NAV.swift` 只负责纯数值计算。View 层只负责按 tag 决定半透明/灰/⚠ 标记。
 
 ### 4.3 回测执行
 
@@ -377,7 +377,7 @@ Widget 永不直接调网络、不读 CoreData。它只读 App Group 里 App 写
 
 - 单基金 / 多基金 / 含分红 / 含跨期流水 / 含快照前移
 - 每个 NAV 可信度 tag（`confirmed` / `pending_reconcile` / `intraday_estimate` / `snapshot_only` / `flow_only`）至少 1 例
-- expected 值由算法文档的公式手算 + 一份独立实现（例如 Python notebook）交叉验证
+- expected 值由算法文档的公式**手算**得出，写在 fixture 旁的 `derivation.md` 里说明每步。**不要求独立实现交叉验证** —— Step 2 real fixture 自然完成与旧 app 的二次校验。
 
 放：`docs/algorithms/golden_fixtures/synthetic/<scenario>/`
 
@@ -441,10 +441,12 @@ enum BNColor {
 |---|---|
 | 最低 iOS | **iOS 16+**（覆盖率优先；Liquid Glass 视为渐进增强，见 §7）|
 | 包管理 | SwiftPM only。**不引入** CocoaPods / Carthage |
-| 三方依赖 | 默认 0 个。AGENTS.md 红线 2。例外按 PRD §5 红线 2 走 |
+| 三方依赖（运行时）| 默认 0 个。AGENTS.md 红线 2。例外按 PRD §5 红线 2 走 |
+| 开发期工具 | **SwiftLint** + **swift-format**（iOS）；**ruff** + **black**（如未来 backend 进新仓，Python）。开发期工具不进二进制，不违反零三方红线。配置文件落 `.swiftlint.yml` / `.swift-format` |
 | Bundle ID | App: `com.chenyuefu.backtester-note` · Widgets: `com.chenyuefu.backtester-note.widgets` |
 | App Group | `group.com.chenyuefu.backtester-note` |
 | Xcode Scheme | 一个 App scheme + 一个 Widget scheme + 一个 Tests scheme |
+| Xcode 工程顶层目录 | **Phase 1b 起 Xcode 工程时由 Opus 评估并写 worklog 决定**：硬扛 `ios/` 还是顺 Xcode 默认 `BacktesterNote/`。倾向后者以减少 `@main` 路径 / build settings 摩擦。决定后回填本表 |
 | Concurrency | Swift Concurrency（async/await + actor）。Combine 仅用于 `@Published` 桥接 |
 | Logging | `os.Logger`，不接三方 |
 | Analytics | 本地 SQLite 埋点（PRD §8），永不接三方 |
@@ -455,27 +457,37 @@ enum BNColor {
 
 | 实现位置 | 必读契约/算法 | 状态 |
 |---|---|---|
-| `ios/Algorithms/NAV.swift` | `docs/algorithms/nav.v1.md` | ❌ 缺 |
-| `ios/Algorithms/Radar/` | `docs/algorithms/radar.v1.md` | ❌ 缺 |
-| `ios/Algorithms/Backtest/` | `docs/algorithms/backtest.v1.md` | ❌ 缺 |
-| `ios/Config/StrategyIntent.swift` | `docs/algorithms/strategy_intent.v1.md` | ❌ 缺 |
-| `ios/Networking/Endpoints.swift` | `docs/contracts/api.v1.md` | ❌ 缺（GPT 主笔）|
+| `ios/Algorithms/NAV.swift` | `docs/algorithms/nav.v1.md` | ✅ 有 |
+| `ios/Algorithms/Radar/` | `docs/algorithms/radar.v1.md` | ✅ 有 |
+| `ios/Algorithms/Backtest/` | `docs/algorithms/backtest.v1.md` | ✅ 有 |
+| `ios/Config/StrategyIntent.swift` | `docs/algorithms/strategy_intent.v1.md` | ✅ 有 |
+| `ios/Networking/Endpoints.swift` | `docs/contracts/api.v1.md` | ⚠️ stub（GPT 待补完整 schema，依赖 Elvis 给后端代码访问路径）|
 | `ios/Services/ImportService.swift` | `docs/contracts/json_import.v1.md` | ✅ 有 |
-| `ios/Services/ImportService.swift`（旧 app 兼容）| `docs/contracts/legacy_fundmvp_mapping.md` | ❌ 缺（GPT 主笔）|
+| `ios/Services/ImportService.swift`（旧 app 兼容）| `docs/contracts/legacy_fundmvp_mapping.md` | ⚠️ stub（GPT 待补字段对齐，依赖反推旧 Persistence 导出格式）|
 | `ios/DesignSystem/` | `docs/design/project/lib/bn-tokens.css` | ✅ 有 |
 | `ios/` 整体迁移决策 | `docs/algorithms/salvage_matrix.md` | ✅ 有 |
 
-**5 份缺的算法/契约文档是 Phase 1 进入实现前的硬阻塞项**。GPT 主笔，Opus 校验数字。
+**Phase 1a 解锁条件**：4 份算法文档（nav/radar/backtest/strategy_intent）✅ + Elvis 裁定 XIRR / Radar 两处 Algorithm drift。
+**Phase 3 解锁条件**：`api.v1.md` 完整 schema（GPT 完成）。
+**Phase 1c 解锁条件**：`legacy_fundmvp_mapping.md` 完整字段表（GPT 完成）。
 
 ---
 
 ## 10. 与 PRD 阶段路线图的对齐
 
+PRD §9 的 Phase 1 在工程上拆为三个可独立 ship 的子阶段，避免一口吃成胖子：
+
+| 子阶段 | 目标 | 必产物 | DoD |
+|---|---|---|---|
+| **Phase 1a · 算法地基** | Algorithms 层裸跑、CI 全绿 | `ios/Algorithms/*` 全部 + synthetic golden fixture CI | 一个 SwiftPM package 单跑可过；XIRR/TWRR/Radar/Metrics/Backtest 单测覆盖；fixture diff < 0.01% |
+| **Phase 1b · UI 骨架** | 持仓 Tab 用 mock 数据可看 | Xcode 工程 + DesignSystem + Holdings Feature + Settings 壳 | 设计 1:1（[bn-holdings.jsx](../design/project/lib/bn-holdings.jsx)）；mock 数据驱动；订阅卡片占位 |
+| **Phase 1c · 接通真数据** | Holdings 跑真账户 | Persistence + ImportService（json_import.v1）+ Holdings Mock → Real 切换 | JSON 导入 + 预览 + 落库；快照前移 UI 含确认 sheet；CoreData 迁移 |
+
 | PRD §9 阶段 | 本架构需要落地的东西 |
 |---|---|
-| **Phase 1 · 骨架** | App Shell + Holdings Feature + Settings + Algorithms（NAV/Radar/Metrics/XIRR）+ Persistence + ImportService + DesignSystem + Synthetic Golden Fixture CI（Real fixture ship 前补）|
-| **Phase 2 · 回测与 Widgets** | Backtest Feature + Algorithms/Backtest + WidgetsExt 三个 + WidgetSyncService（Free 路径）+ 快捷指令模板 |
-| **Phase 3 · Pro 自动化** | StoreKit + Entitlement.pro 路径开通 + WidgetSyncService Pro 路径 + 退避/离线 |
+| **Phase 1（= 1a + 1b + 1c）** | 见上表 |
+| **Phase 2 · 回测与 Widgets** | Backtest Feature + Algorithms/Backtest 全 + WidgetsExt 三个 + WidgetSyncService（Free 路径）+ 快捷指令模板 |
+| **Phase 3 · Pro 自动化** | StoreKit + Entitlement.pro + `api.v1.md` 完整 + WidgetSyncService Pro 路径 + 退避/离线 |
 | **Phase 4 · 上架** | 隐私清单、合规文案、TestFlight |
 | **Phase 5 · 平台扩展** | Mac Catalyst 评估，Algorithms 层应已天然兼容 |
 
@@ -514,3 +526,8 @@ enum BNColor {
   - Golden Fixture 改为 schema-first 两步走（§6.2）：synthetic 由 Opus 与算法 port 同步建，real 由 Elvis 后补，不阻塞 Phase 1 启动
   - App 名 `回测手记` 确认沿用
   - §11 Phase 0 前三项标记完成
+- v1.2 (2026-04-25) — Phase 0 review 后五处微调：
+  - §6.2 synthetic fixture 简化为"算法文档手算 + `derivation.md` 即可"，去除"Python notebook 独立实现交叉验证"要求（一人项目避免 over-engineering）
+  - §8 加 SwiftLint / swift-format 行；加 Xcode 工程顶层目录决议待 Phase 1b 在 worklog 落地
+  - §9 引用矩阵：4 份算法文档已交付（nav/radar/backtest/strategy_intent），api 与 legacy_fundmvp_mapping 改为 stub 状态；Phase 1a/3/1c 解锁条件明确化
+  - §10 Phase 1 拆为 1a/1b/1c 三个可独立 ship 子阶段
