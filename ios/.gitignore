@@ -1,0 +1,11 @@
+# xcodegen-generated Xcode project — regenerate via `xcodegen generate`
+BacktesterNote.xcodeproj/
+*.xcworkspace/
+
+# Swift / Xcode build artifacts
+.build/
+.swiftpm/
+xcuserdata/
+DerivedData/
+*.xcuserstate
+*.xcuserdatad/
