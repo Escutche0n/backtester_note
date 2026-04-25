@@ -13,11 +13,11 @@ struct BacktestResultPreview: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 3) {
                         Text("上次回测")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(BNTokens.Typography.text(size: 11))
                             .kerning(0.66)
                             .foregroundStyle(BNTokens.Colors.foregroundTertiary)
                         Text("核心-卫星 · 月定投")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(BNTokens.Typography.text(size: 14))
                             .foregroundStyle(BNTokens.Colors.foregroundPrimary)
                     }
 
@@ -77,7 +77,7 @@ private struct ResultMetric: View {
     var body: some View {
         VStack(spacing: 3) {
             Text(label)
-                .font(.system(size: 10))
+                .font(BNTokens.Typography.text(size: 10))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)

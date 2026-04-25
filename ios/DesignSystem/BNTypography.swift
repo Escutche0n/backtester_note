@@ -3,11 +3,10 @@ import SwiftUI
 /// Typography tokens — translation of bn-tokens.css text classes (`.bn-h1/2/3`, `.bn-num`,
 /// `.bn-big-num`, `.bn-label`, `.bn-chip`, `.bn-btn`, `.bn-seg`).
 ///
-/// Font family: CSS uses `-apple-system, "SF Pro Display", "SF Pro Text", "PingFang SC"...`.
-/// On iOS, `Font.system(...)` already resolves to SF Pro, with Han glyphs falling back to
-/// PingFang automatically. Mono uses `Font.system(..., design: .monospaced)` rather than
-/// `Font.custom("SF Mono")` — system mono is guaranteed available; SF Mono is not bundled
-/// on iOS by default.
+/// Font family: Elvis visual override uses SF Pro Display Bold for Latin glyphs and PingFang SC
+/// for Chinese glyphs. On iOS, `Font.system(..., weight: .bold)` resolves Latin text to SF Pro
+/// and falls back to PingFang for Han glyphs. Numeric text uses the system monospaced family
+/// through `Font.system(..., design: .monospaced)`, which is the iOS-safe SF Mono equivalent.
 ///
 /// Weight mapping (CSS → SwiftUI):
 /// - `590` → `.semibold` (closest; SwiftUI exposes only standard weight steps)
@@ -20,40 +19,50 @@ import SwiftUI
 /// width-aligned across rows; Dynamic Type would break tabular alignment.
 enum BNTypography {
 
+    // MARK: Family helpers
+
+    static func text(size: CGFloat) -> Font {
+        Font.system(size: size, weight: .bold)
+    }
+
+    static func number(size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        Font.system(size: size, weight: weight, design: .monospaced).monospacedDigit()
+    }
+
     // MARK: Headings
 
     /// `.bn-h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em }`. Fixed size.
-    static let h1 = Font.system(size: 28, weight: .bold)
+    static let h1 = text(size: 28)
 
     /// `.bn-h2 { 20 / 700 / -0.02em }`. Fixed size.
-    static let h2 = Font.system(size: 20, weight: .bold)
+    static let h2 = text(size: 20)
 
     /// `.bn-h3 { 15 / 600 / -0.01em }`. Fixed size.
-    static let h3 = Font.system(size: 15, weight: .semibold)
+    static let h3 = text(size: 15)
 
     /// Section label — `.bn-label { 11 / 600, uppercase, letter-spacing: 0.08em }`.
     /// Token gives only the base font; callers should apply `.kerning(0.88)` and
     /// `.textCase(.uppercase)` at the view layer.
-    static let label = Font.system(size: 11, weight: .semibold)
+    static let label = text(size: 11)
 
     // MARK: Body / supplementary
 
     /// `.bn-btn { 13 / 590 }`. Fixed size.
-    static let button = Font.system(size: 13, weight: .semibold)
+    static let button = text(size: 13)
 
     /// `.bn-seg > button { 12 / 590 }`. Fixed size.
-    static let segmented = Font.system(size: 12, weight: .semibold)
+    static let segmented = text(size: 12)
 
     /// `.bn-chip { 10.5 / 600, letter-spacing: 0.02em, tabular-nums }`. Fixed size.
-    static let chip = Font.system(size: 10.5, weight: .semibold).monospacedDigit()
+    static let chip = text(size: 10.5).monospacedDigit()
 
     // MARK: Numerics — mono + tabular (alignment-critical)
 
     /// `.bn-num { font-family: var(--bn-mono); tabular-nums; letter-spacing: -0.02em }`.
     /// Body-sized monospaced numerics for inline figures.
-    static let numericBody = Font.system(size: 15, weight: .regular, design: .monospaced).monospacedDigit()
+    static let numericBody = number(size: 15)
 
     /// `.bn-big-num { mono / tabular / 600 / -0.03em }`. Used for large NAV / total figures.
     /// Size 28 chosen to match `.bn-h1` baseline so a label + big-num row reads cleanly.
-    static let bigNumber = Font.system(size: 28, weight: .semibold, design: .monospaced).monospacedDigit()
+    static let bigNumber = number(size: 28, weight: .semibold)
 }

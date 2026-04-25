@@ -41,11 +41,11 @@ struct RadarCard: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("趋势雷达")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 12))
                     .foregroundStyle(BNTokens.Colors.foregroundSecondary)
 
                 Text("六维度投资复盘评分")
-                    .font(.system(size: 10.5))
+                    .font(BNTokens.Typography.text(size: 10.5))
                     .foregroundStyle(BNTokens.Colors.foregroundTertiary)
             }
 
@@ -65,7 +65,7 @@ struct RadarCard: View {
         VStack(alignment: .leading, spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("总分")
-                    .font(.system(size: 10.5, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 10.5))
                     .kerning(0.63)
                     .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
@@ -84,7 +84,7 @@ struct RadarCard: View {
                 ForEach(Array(HoldingsMockData.radarDimensions.enumerated()), id: \.offset) { index, dimension in
                     HStack(spacing: 6) {
                         Text(dimension)
-                            .font(.system(size: 10.5))
+                            .font(BNTokens.Typography.text(size: 10.5))
                             .foregroundStyle(BNTokens.Colors.foregroundSecondary)
                             .lineLimit(1)
 

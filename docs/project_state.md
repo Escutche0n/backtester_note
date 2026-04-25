@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-26
-- 上次更新者：GPT（iOS solid theme + AppIcon）
+- 上次更新者：GPT（iOS font + background tuning）
 
 ---
 
@@ -25,6 +25,7 @@
 | 1b-3 | Holdings mock UI（用 token 画 Card / Chip / Row 第一片 + ambient gradient 落 RootView） | ✅ done | `e12c8e8` | GPT（Elvis 临时指派） |
 | 1b-4 | Settings sheet 壳 + 回测 Tab 第一屏 | ✅ done | `2059310` | GPT（Elvis 临时指派） |
 | 1b-visual | AppIcon + 纯色暗色面视觉微调（移除当前 UI gradient / Material） | ✅ done | 本次 | GPT（Elvis 指派） |
+| 1b-visual-2 | 字体与底色微调（正文 bold system / 中文 PingFang fallback，数字 SF Mono 同族，底色 `#1E1E20`） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1c | ImportService（快捷指令 JSON 导入） | ⏳ preview done / persistence next | 本次 | GPT（Elvis 指派） |
 | 1d | Networking + portfolio/history 接入 | 待排 | — | Opus |
 | 1e | NAV / 雷达图渲染 | 待排 | — | Opus |
@@ -43,6 +44,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-26 · Elvis 要求中文用 PingFang SC、英文用 SF Pro Display Bold、数字用 SF Mono 同族、纯色底色改为 `#1E1E20`；实现层用 bold system font + Chinese fallback，数字走 system monospaced，并同步 AppIcon 底色 · 2026-04-26_ios_font-background-tuning worklog
 - 2026-04-26 · Elvis 要求当前 iOS UI 从 Liquid Glass / ambient gradient 转向截图参考的纯色暗色面；实现层先移除 SwiftUI gradient / Material，并补 AppIcon。设计源 `docs/design/` 暂不动，后续如定稿再请 Claude Design 更新 · 2026-04-26_ios_solid-theme-app-icon worklog
 - 2026-04-25 · Phase 1c 第一刀只做 `json_import.v1` 文件选择、解析校验与预览；确认写入暂禁用，Persistence / PortfolioService 下一刀接入 · 2026-04-25_ios_phase1c-import-preview worklog
 - 2026-04-25 · Phase 1b-4 落地 Settings sheet 壳 + Backtest mock 第一屏；回测仍是 UI mock，不触发算法口径与后端契约 · 2026-04-25_ios_phase1b-4-settings-backtest-shell worklog

@@ -53,7 +53,7 @@ struct MockRadarChart: View {
             ForEach(Array(dimensions.enumerated()), id: \.offset) { index, label in
                 let location = point(index: index, value: 100, center: center, radius: radius)
                 Text(label)
-                    .font(.system(size: 9.5, weight: .medium))
+                    .font(BNTokens.Typography.text(size: 9.5))
                     .foregroundStyle(BNTokens.Colors.foregroundSecondary)
                     .position(location)
             }

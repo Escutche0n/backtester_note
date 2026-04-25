@@ -7,13 +7,13 @@ struct BacktestHistoryList: View {
         VStack(spacing: 8) {
             HStack {
                 Text("历史回测 · \(items.count)")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 12))
                     .foregroundStyle(BNTokens.Colors.foregroundSecondary)
 
                 Spacer()
 
                 Button("对比") {}
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 11))
                     .buttonStyle(.bordered)
                     .tint(BNTokens.Colors.foregroundSecondary)
             }
@@ -40,12 +40,12 @@ struct BacktestHistoryList: View {
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
 
                     Text(item.savedAt)
-                        .font(.system(size: 9.5))
+                        .font(BNTokens.Typography.text(size: 9.5))
                         .foregroundStyle(BNTokens.Colors.foregroundTertiary)
                 }
 
                 Text(item.name)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 13))
                     .foregroundStyle(BNTokens.Colors.foregroundPrimary)
                     .lineLimit(1)
 
@@ -81,7 +81,7 @@ struct BacktestHistoryList: View {
     private func metric(_ title: String, _ value: String, _ color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 9))
+                .font(BNTokens.Typography.text(size: 9))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
             Text(value)
                 .bnNumeric(12, weight: .semibold)

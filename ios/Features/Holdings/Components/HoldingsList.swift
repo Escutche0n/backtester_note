@@ -8,7 +8,7 @@ struct HoldingsList: View {
         VStack(spacing: 10) {
             HStack {
                 Text("持仓基金 · \(funds.count)")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 12))
                     .foregroundStyle(BNTokens.Colors.foregroundSecondary)
 
                 Spacer()

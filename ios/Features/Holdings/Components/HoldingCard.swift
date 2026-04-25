@@ -33,7 +33,7 @@ struct HoldingCard: View {
     private var topRow: some View {
         HStack(alignment: .top, spacing: 10) {
             Text(fund.type)
-                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                .font(BNTokens.Typography.text(size: 10))
                 .foregroundStyle(BNTokens.Colors.foregroundSecondary)
                 .frame(width: 32, height: 32)
                 .background(BNTokens.Colors.foregroundPrimary.opacity(0.04))
@@ -45,7 +45,7 @@ struct HoldingCard: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(fund.name)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 14))
                     .foregroundStyle(BNTokens.Colors.foregroundPrimary)
                     .lineLimit(1)
 
@@ -92,7 +92,7 @@ struct HoldingCard: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text("仓位")
-                    .font(.system(size: 10))
+                    .font(BNTokens.Typography.text(size: 10))
                     .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
                 Spacer()
@@ -130,7 +130,7 @@ struct HoldingCard: View {
     private func miniMetric(_ label: String, _ value: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 9.5, weight: .medium))
+                .font(BNTokens.Typography.text(size: 9.5))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
             Text(value)

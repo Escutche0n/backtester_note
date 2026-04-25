@@ -38,7 +38,7 @@ struct BacktestConfigCard: View {
             }
 
             Button("开始回测") {}
-                .font(.system(size: 14, weight: .semibold))
+                .font(BNTokens.Typography.text(size: 14))
                 .foregroundStyle(BNTokens.Colors.background)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
@@ -76,13 +76,13 @@ struct BacktestConfigCard: View {
         BNGlassCard(radius: 12) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("组合构成")
-                    .font(.system(size: 10.5, weight: .medium))
+                    .font(BNTokens.Typography.text(size: 10.5))
                     .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
                 ForEach(Array(selectedPortfolio.fundCodes.enumerated()), id: \.offset) { index, code in
                     HStack {
                         Text(fundName(code))
-                            .font(.system(size: 12))
+                            .font(BNTokens.Typography.text(size: 12))
                             .foregroundStyle(BNTokens.Colors.foregroundPrimary)
                         Spacer()
                         Text("\(String(format: "%.0f", selectedPortfolio.weights[index] * 100))%")
@@ -99,7 +99,7 @@ struct BacktestConfigCard: View {
         HStack(spacing: 6) {
             ForEach(["1Y", "3Y", "5Y", "成立起"], id: \.self) { range in
                 Text(range)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 11))
                     .foregroundStyle(BNTokens.Colors.foregroundPrimary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -136,7 +136,7 @@ struct BacktestConfigCard: View {
 
                 if mode == .portfolio {
                     Toggle("启用再平衡", isOn: $rebalanceEnabled)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(BNTokens.Typography.text(size: 12))
                         .tint(BNTokens.Colors.up)
 
                     if rebalanceEnabled {
@@ -145,7 +145,7 @@ struct BacktestConfigCard: View {
                             Spacer()
                             Text("5%").bnNumeric(12, weight: .semibold)
                         }
-                        .font(.system(size: 11.5))
+                        .font(BNTokens.Typography.text(size: 11.5))
                         .foregroundStyle(BNTokens.Colors.foregroundSecondary)
                     }
                 }
@@ -157,7 +157,7 @@ struct BacktestConfigCard: View {
     private func miniInfo(_ title: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 10.5))
+                .font(BNTokens.Typography.text(size: 10.5))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
             Text(value)
                 .bnNumeric(13, weight: .semibold)
@@ -179,11 +179,11 @@ private struct PortfolioPill: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 3) {
                 Text(portfolio.name)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 13))
                 Text("\(portfolio.fundCodes.count) 只 · \(portfolio.weights.map { String(format: "%.0f", $0 * 100) }.joined(separator: "/"))%")
                     .bnNumeric(10.5)
                 Text(portfolio.note)
-                    .font(.system(size: 9.5))
+                    .font(BNTokens.Typography.text(size: 9.5))
                     .lineLimit(1)
             }
             .foregroundStyle(selected ? BNTokens.Colors.accent : BNTokens.Colors.foregroundPrimary)
@@ -208,10 +208,10 @@ private struct FieldRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
-                .font(.system(size: 10.5))
+                .font(BNTokens.Typography.text(size: 10.5))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
             Text(value)
-                .font(.system(size: 14, weight: .semibold))
+                .font(BNTokens.Typography.text(size: 14))
                 .foregroundStyle(BNTokens.Colors.foregroundPrimary)
             if let detail {
                 Text(detail)

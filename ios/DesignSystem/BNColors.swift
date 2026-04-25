@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Color tokens — direct Swift translation of `docs/design/project/lib/bn-tokens.css` `:root`.
+/// Color tokens — Swift translation of `docs/design/project/lib/bn-tokens.css` `:root`,
+/// plus Elvis-approved visual overrides captured in worklog.
 ///
 /// Strategy: the design is a dark-only "PeakWatch-inspired dark dashboard". We do NOT split
-/// Light/Dark; both modes use the same dark hex values. This keeps the visual locked to
-/// the design source of truth and avoids a second authority (Asset Catalog) drifting from CSS.
+/// Light/Dark; both modes use the same dark hex values. Design-source drift is captured in
+/// worklog until `docs/design/` is deliberately refreshed.
 /// If Light-mode adaptation is ever requested, switch to Asset Catalog with dual values.
 ///
 /// CN market convention: `up = red (#F6465D)`, `down = green (#2EBD85)`.
@@ -12,10 +13,10 @@ enum BNColors {
 
     // MARK: Surfaces — warm near-black
 
-    /// `--bn-bg #0B0B0D`
-    static let background = Color(red: 0x0B / 255, green: 0x0B / 255, blue: 0x0D / 255)
-    /// `--bn-bg-elev #141418`
-    static let backgroundElevated = Color(red: 0x14 / 255, green: 0x14 / 255, blue: 0x18 / 255)
+    /// Elvis visual override: solid page background `#1E1E20`.
+    static let background = Color(red: 0x1E / 255, green: 0x1E / 255, blue: 0x20 / 255)
+    /// Elevated background, kept close to the solid page base.
+    static let backgroundElevated = Color(red: 0x1E / 255, green: 0x1E / 255, blue: 0x20 / 255)
     /// `--bn-surface #17171C`
     static let surface = Color(red: 0x17 / 255, green: 0x17 / 255, blue: 0x1C / 255)
     /// `--bn-surface-2 #1E1E24`

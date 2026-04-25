@@ -42,13 +42,13 @@ struct OverviewPanel: View {
     private var header: some View {
         HStack(spacing: 8) {
             Text("总览")
-                .font(.system(size: 12, weight: .semibold))
+                .font(BNTokens.Typography.text(size: 12))
                 .foregroundStyle(BNTokens.Colors.foregroundSecondary)
 
             Spacer()
 
             Text("失衡")
-                .font(.system(size: 10.5))
+                .font(BNTokens.Typography.text(size: 10.5))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
             Text("\(String(format: "%.1f", overview.unbalance * 100))%")
@@ -67,7 +67,7 @@ struct OverviewPanel: View {
             ForEach(metrics) { metric in
                 VStack(alignment: .leading, spacing: 4) {
                     Text(metric.label)
-                        .font(.system(size: 10, weight: .medium))
+                        .font(BNTokens.Typography.text(size: 10))
                         .foregroundStyle(BNTokens.Colors.foregroundTertiary)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)

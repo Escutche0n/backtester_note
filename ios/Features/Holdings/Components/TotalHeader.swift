@@ -22,7 +22,7 @@ struct TotalHeader: View {
                         .foregroundStyle(HoldingsFormatters.pnlColor(overview.dayPnl))
 
                     Text("今日")
-                        .font(.system(size: 11, weight: .medium))
+                        .font(BNTokens.Typography.text(size: 11))
                         .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
                     Circle()
@@ -39,7 +39,7 @@ struct TotalHeader: View {
 
             Button(action: onSettings) {
                 Image(systemName: "gearshape")
-                    .font(.system(size: 15, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 15))
                     .foregroundStyle(BNTokens.Colors.foregroundSecondary)
                     .frame(width: 34, height: 34)
                     .background(BNTokens.Colors.foregroundPrimary.opacity(0.06))

@@ -38,6 +38,6 @@ enum HoldingsFormatters {
 
 extension View {
     func bnNumeric(_ size: CGFloat = 15, weight: Font.Weight = .regular) -> some View {
-        font(.system(size: size, weight: weight, design: .monospaced).monospacedDigit())
+        font(BNTokens.Typography.number(size: size, weight: weight))
     }
 }

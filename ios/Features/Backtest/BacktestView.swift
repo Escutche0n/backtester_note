@@ -30,7 +30,7 @@ struct BacktestView: View {
                     .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
                 Text("回测")
-                    .font(.system(size: 26, weight: .bold))
+                    .font(BNTokens.Typography.text(size: 26))
                     .foregroundStyle(BNTokens.Colors.foregroundPrimary)
             }
 
@@ -40,7 +40,7 @@ struct BacktestView: View {
                 mode = .portfolio
             } label: {
                 Label("新建", systemImage: "plus")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 11))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 7)
             }

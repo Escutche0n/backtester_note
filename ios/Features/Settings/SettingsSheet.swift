@@ -131,22 +131,22 @@ private struct SettingsRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: systemImage)
-                .font(.system(size: 15, weight: .semibold))
+                .font(BNTokens.Typography.text(size: 15))
                 .foregroundStyle(BNTokens.Colors.foregroundSecondary)
                 .frame(width: 24)
 
             Text(title)
-                .font(.system(size: 14, weight: .medium))
+                .font(BNTokens.Typography.text(size: 14))
                 .foregroundStyle(BNTokens.Colors.foregroundPrimary)
 
             Spacer()
 
             Text(value)
-                .font(.system(size: 12))
+                .font(BNTokens.Typography.text(size: 12))
                 .foregroundStyle(BNTokens.Colors.foregroundSecondary)
 
             Image(systemName: "chevron.right")
-                .font(.system(size: 11, weight: .semibold))
+                .font(BNTokens.Typography.text(size: 11))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
         }
         .listRowBackground(BNTokens.Colors.surface)

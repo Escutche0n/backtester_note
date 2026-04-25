@@ -46,7 +46,7 @@ struct ImportPreviewView: View {
                         .padding(.top, 6)
 
                     Text(issue.message)
-                        .font(.system(size: 13))
+                        .font(BNTokens.Typography.text(size: 13))
                         .foregroundStyle(BNTokens.Colors.foregroundPrimary)
                 }
             }
@@ -59,7 +59,7 @@ struct ImportPreviewView: View {
             ForEach(preview.accountSummaries) { account in
                 VStack(alignment: .leading, spacing: 6) {
                     Text(account.displayName)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(BNTokens.Typography.text(size: 15))
                         .foregroundStyle(BNTokens.Colors.foregroundPrimary)
 
                     if let baselineDate = account.baselineDate {

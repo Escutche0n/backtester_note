@@ -36,7 +36,7 @@ struct NavCard: View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("净值曲线")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(BNTokens.Typography.text(size: 12))
                     .foregroundStyle(BNTokens.Colors.foregroundSecondary)
 
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -102,7 +102,7 @@ private struct LegendItem: View {
                 .frame(width: 8, height: 2)
 
             Text(title)
-                .font(.system(size: 10))
+                .font(BNTokens.Typography.text(size: 10))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
         }
     }
