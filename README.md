@@ -13,7 +13,7 @@
 
 - Phase 0 文档基线已建立：PRD、架构、算法口径、JSON 导入契约、设计稿、worklog。
 - Phase 1a 可启动：端上 Algorithms 层 port + synthetic golden fixture。
-- 后端 API schema 完整化暂未启动：等待 Elvis 提供后端 GitHub URL。
+- 后端 GitHub URL 已提供；`api.v1.md` 已按后端源码更新到 v1.1。`portfolio/history` 仍是 mock，后续需在后端 repo 实现。
 - iOS 最低版本已定为 **17.4**。
 
 ## 开工前必读
@@ -49,7 +49,7 @@
 | [docs/prd/Backtester_Note_PRD_v2.md](docs/prd/Backtester_Note_PRD_v2.md) | 产品冻结项、Free/Pro 边界、红线 |
 | [docs/architecture/overview.v1.md](docs/architecture/overview.v1.md) | iOS 分层、数据流、工程默认值、阶段拆分 |
 | [docs/contracts/json_import.v1.md](docs/contracts/json_import.v1.md) | 快捷指令 / 外部工具导入 schema |
-| [docs/contracts/api.v1.md](docs/contracts/api.v1.md) | Pro 后端 API 契约 stub |
+| [docs/contracts/api.v1.md](docs/contracts/api.v1.md) | Pro 后端 API 契约 v1.1 |
 | [docs/contracts/legacy_fundmvp_mapping.md](docs/contracts/legacy_fundmvp_mapping.md) | 旧 FundMVP 导出到新 schema 的映射 stub |
 | [docs/algorithms/nav.v1.md](docs/algorithms/nav.v1.md) | NAV、XIRR、CAGR、Sharpe、Calmar、回撤、持有收益 |
 | [docs/algorithms/radar.v1.md](docs/algorithms/radar.v1.md) | 趋势雷达六维、三快照、StrategyIntent 子分 |
@@ -67,7 +67,7 @@
 
 ## 仍待补齐
 
-- 后端 GitHub URL：用于把 [docs/contracts/api.v1.md](docs/contracts/api.v1.md) 从 stub 补成完整 schema。
+- 后端 `POST /api/portfolio/history`：当前仍是 mock，需要在 `backtester-backend` repo 替换成真实基金历史聚合。
 - 旧 FundMVP 导出字段表：用于补 [docs/contracts/legacy_fundmvp_mapping.md](docs/contracts/legacy_fundmvp_mapping.md) v1.1。
 - Real golden fixture：Elvis 后续从旧 app 导出真实账户，Phase 1 ship 前必须补。
 
@@ -100,4 +100,4 @@
 3. 建 `docs/algorithms/golden_fixtures/synthetic/` 最小 fixture。
 4. 用单测锁 `nav.v1.md`、`radar.v1.md`、`backtest.v1.md` 的口径。
 
-如果做后端/契约，应先等 Elvis 提供后端 GitHub URL，再补 `api.v1.md` v1.1。
+如果做后端/契约，应进入 `https://github.com/Escutche0n/backtester-backend`，优先补部署流程和真实 `portfolio/history`。

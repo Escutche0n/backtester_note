@@ -1,12 +1,12 @@
-# Backend API Contract v1（STUB）
+# Backend API Contract v1.1
 
-> ⚠️ **本文件是 stub**。
+> ⚠️ `POST /api/portfolio/history` 仍是 mock；其余已知接口已按后端源码反推到 v1.1。
 >
-> 完整 schema 待 GPT 反推线上后端 `http://159.75.16.87` 实际响应或读旧后端代码后补完。
-> 已知接口结构来自旧 app `FundMVP/Networking/` 与旧后端 README，可信但未对齐字段细节。
+> schema 已按 GitHub 后端 `https://github.com/Escutche0n/backtester-backend` commit `926c912` 反推到 v1.1。
+> `POST /api/portfolio/history` 仍是后端 mock，iOS 端不得当作真实回测/组合历史数据源。
 >
 > 实现锚点：`ios/Networking/Endpoints.swift`
-> 后端代码访问路径：**待 Elvis 在 worklog 提供**（`Phase0` worklog `## Questions for Elvis` 已挂）。
+> 后端代码访问路径：`https://github.com/Escutche0n/backtester-backend`
 
 ---
 
@@ -25,9 +25,10 @@
 |---|---|---|---|---|
 | GET | `/health` | 存活探测 | ✅ | ✅ |
 | GET | `/api/fund/search?keyword=xxx` | 基金模糊搜索 | ❌（Free 走本地或快捷指令）| ✅ |
-| GET | `/api/fund/realtime?codes=xxx&codes=yyy` | 多基金实时估值 | ❌ | ✅（≤ 5 min/次）|
+| GET | `/api/fund/realtime?code=xxx` | 单基金实时估值 | ❌ | ✅（App 内主动刷新可控；后台刷新尽力而为）|
 | GET | `/api/fund/history?code=xxx&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` | 单基金历史净值 | ❌ | ✅ |
-| POST | `/api/portfolio/history` | 多基金组合历史聚合 | ❌ | ✅ |
+| POST | `/api/portfolio/realtime` | 真实持仓盘中估值聚合 | ❌ | ✅ |
+| POST | `/api/portfolio/history` | 多基金组合历史聚合 | ❌ | ⚠️ 当前 mock，不可用于生产 |
 
 **v1 决议**：Free 完全不调用本后端（PRD §4.1）。任何 Free 路径出现对 159.75.16.87 的请求 = bug。
 
@@ -41,42 +42,64 @@
 GET /api/fund/search?keyword=华夏
 ```
 
-预期响应（旧 app `EastMoneySearchResponse` 模型反推）：
+响应：
 
 ```json
 {
-  "code": 0,
-  "data": [
-    { "code": "000001", "name": "华夏成长混合", "type": "混合型" }
+  "keyword": "华夏",
+  "source": "eastmoney",
+  "items": [
+    { "code": "000001", "name": "华夏成长混合", "fund_type": "混合型", "currency": "CNY" }
   ]
 }
 ```
 
-**TBD**：错误码、`data` 是否分页、`type` 枚举完整列表。GPT 起草 v1.1。
+字段：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `keyword` | string | 原查询词 |
+| `source` | string | 当前为 `eastmoney` |
+| `items[].code` | string | 基金代码 |
+| `items[].name` | string | 基金名称 |
+| `items[].fund_type` | string | 基金类型，上游字符串 |
+| `items[].currency` | string | 默认 `CNY` |
 
 ### 3.2 `GET /api/fund/realtime`
 
 ```http
-GET /api/fund/realtime?codes=000001&codes=110011
+GET /api/fund/realtime?code=006195
 ```
 
 ```json
 {
-  "code": 0,
-  "data": [
-    {
-      "code": "000001",
-      "estimated_nav": 1.2345,
-      "estimated_at": "2026-04-25T14:30:00+08:00",
-      "official_nav": 1.2300,
-      "official_date": "2026-04-24",
-      "change_rate": 0.0036
-    }
-  ]
+  "data": {
+    "code": "006195",
+    "name": "国金量化多因子股票A",
+    "fund_type": "股票型",
+    "nav": 3.5202,
+    "nav_date": "2026-04-22 15:00",
+    "change_percent": 1.32,
+    "value_kind": "estimated",
+    "source": "eastmoney"
+  }
 }
 ```
 
-**TBD**：`change_rate` 基准（vs 昨收 / vs 官方）；停盘 / 数据缺失返回；交易时段外的行为。
+实际后端 response model 是 `{ "data": FundRealtimeData }`，不是数组。iOS 端如需多基金，应并发请求单基金接口或优先使用 `POST /api/portfolio/realtime`。
+
+字段：
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `data.code` | string | 基金代码 |
+| `data.name` | string | 基金名称 |
+| `data.fund_type` | string | 基金类型 |
+| `data.nav` | number | 当前用于估值的净值 |
+| `data.nav_date` | string | 上游时间字符串，当前不保证 ISO 8601 |
+| `data.change_percent` | number? | 估算涨跌幅；fallback 到确认净值时可能为空 |
+| `data.value_kind` | string | `estimated` 或 `unit_nav` |
+| `data.source` | string | 当前为 `eastmoney` |
 
 ### 3.3 `GET /api/fund/history`
 
@@ -86,35 +109,108 @@ GET /api/fund/history?code=000001&start_date=2024-01-01&end_date=2026-04-25
 
 ```json
 {
-  "code": 0,
-  "data": {
-    "code": "000001",
-    "records": [
-      { "date": "2024-01-02", "unit_nav": 1.0234, "accumulated_nav": 1.5678, "growth_rate": 0.0012 }
-    ]
-  }
+  "fund_code": "000001",
+  "fund_name": "华夏成长混合",
+  "fund_type": "混合型",
+  "source": "eastmoney",
+  "start_date": "2024-01-01",
+  "end_date": "2026-04-25",
+  "points": [
+    { "date": "2024-01-02", "unit_nav": 1.0234, "accumulated_nav": 1.5678 }
+  ]
 }
 ```
 
-**TBD**：分红事件如何标注；日期空缺（停盘 / 节假日）的标准；`growth_rate` 定义。
+字段：
 
-### 3.4 `POST /api/portfolio/history`
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `fund_code` | string | 基金代码 |
+| `fund_name` | string | 基金名称 |
+| `fund_type` | string | 基金类型 |
+| `source` | string | 当前为 `eastmoney` |
+| `start_date` / `end_date` | string? | 请求范围，可能为空 |
+| `points[].date` | string | `YYYY-MM-DD` |
+| `points[].unit_nav` | number | 单位净值 |
+| `points[].accumulated_nav` | number | 累计净值 |
 
-请求体（来自旧 app `CommonModels.swift::PortfolioHistoryRequest`）：
+当前不返回 `growth_rate` / 分红事件。iOS 端不要依赖这些字段。
+
+### 3.4 `POST /api/portfolio/realtime`
+
+请求体：
 
 ```json
 {
-  "items": [
-    { "code": "000001", "weight": 60 },
-    { "code": "110011", "weight": 40 }
-  ],
-  "start_date": "2024-01-01",
-  "end_date": "2026-04-25",
-  "benchmark": "csi300"
+  "holdings": [
+    { "fund_code": "006195", "shares": 1000 },
+    { "fund_code": "008163", "shares": 2000 }
+  ]
 }
 ```
 
-**TBD**：`benchmark` 枚举；权重归一化规则；缺失成分基金的处理；返回结构。
+响应：
+
+```json
+{
+  "summary": {
+    "base_value": 5645.6,
+    "estimated_value": 5662.0,
+    "estimated_profit": 16.4,
+    "estimated_return": 0.002905
+  },
+  "items": [
+    {
+      "fund_code": "006195",
+      "fund_name": "国金量化多因子股票A",
+      "fund_type": "股票型",
+      "shares": 1000.0,
+      "base_date": "2026-04-22",
+      "base_nav": 3.5038,
+      "estimated_time": "2026-04-22 15:00",
+      "estimated_nav": 3.5202,
+      "value_kind": "estimated",
+      "base_value": 3503.8,
+      "estimated_value": 3520.2,
+      "estimated_profit": 16.4,
+      "estimated_return": 0.004681
+    }
+  ],
+  "disclaimer": "估算结果仅供个人记录，不代表确认净值或投资建议。"
+}
+```
+
+### 3.5 `POST /api/portfolio/history`
+
+请求体：
+
+```json
+{
+  "holdings": [
+    { "fund_code": "000001", "weight": 0.6 },
+    { "fund_code": "110011", "weight": 0.4 }
+  ],
+  "start_date": "2024-01-01",
+  "end_date": "2026-04-25",
+  "rebalance": "none"
+}
+```
+
+响应：
+
+```json
+{
+  "start_date": "2024-01-01",
+  "end_date": "2026-04-25",
+  "rebalance": "none",
+  "points": [
+    { "date": "2026-04-18", "portfolio_nav": 1.0, "daily_return": 0.0 }
+  ],
+  "warnings": ["mock implementation: portfolio history is not using real fund data yet"]
+}
+```
+
+**当前状态**：mock implementation。iOS 不得把该接口结果用于真实回测、持仓 NAV 或生产展示。
 
 ---
 
@@ -139,9 +235,10 @@ GET /api/fund/history?code=000001&start_date=2024-01-01&end_date=2026-04-25
 ```swift
 enum Endpoint {
     case fundSearch(keyword: String)
-    case fundRealtime(codes: [String])
+    case fundRealtime(code: String)
     case fundHistory(code: String, range: ClosedRange<Date>)
-    case portfolioHistory(items: [(String, Int)], range: ClosedRange<Date>, benchmark: String)
+    case portfolioRealtime(holdings: [(fundCode: String, shares: Double)])
+    case portfolioHistory(holdings: [(fundCode: String, weight: Double)], range: ClosedRange<Date>, rebalance: String)
     case health
 
     var path: String { /* … */ }
@@ -161,18 +258,19 @@ enum Endpoint {
 
 **线上 = GitHub 100% 镜像**。GPT 拿源码方式：
 
-- **GitHub URL**：`<<TODO: Elvis 在第一次让 Codex 进 backend 工作时贴 URL>>`
-- **本地 clone 路径**：建议 `~/Developer/backtester_backend_readonly/`
-- **关系**：只读参考，不进本仓 submodule。改 backend 直接在 GitHub repo 提 PR；本仓不收 backend 源代码。
-- **理由**：单人项目避免 submodule 复杂度；契约（本文件）+ 线上服务（159.75.16.87）才是 iOS 客户端的依赖面，源码只是参考。
+- **GitHub URL**：`https://github.com/Escutche0n/backtester-backend`
+- **已核对 commit**：`926c912 add portfolio realtime endpoint`
+- **本地 clone 路径**：按需 clone 到 `/tmp/backtester-backend` 或 `~/Developer/backtester_backend_readonly/`
+- **关系**：后端独立 repo，不进本仓 submodule。本仓只保存 iOS 依赖的 API contract。
+- **部署现状**：Elvis 当前手动下载后端文件并上传服务器运行。GPT 可后续在后端 repo 内优化部署流程，优先目标是减少手动上传。
 
 ## 7. 开放问题（GPT 起草 v1.1 时回答）
 
-1. **HTTPS**：Phase 4 上架前必须有 TLS。GPT 评估自签 / Let's Encrypt / Cloudflare。
-2. **认证方案**：Pro StoreKit receipt → 后端验证 → 短期 token。具体协议 v1.1。
-3. **TuShare / 数据源限流**：旧后端代理的下游 API 限流参数。
+1. **HTTPS**：Phase 4 上架前必须有 TLS。GPT 评估 Let's Encrypt / Cloudflare。
+2. **认证方案**：Pro StoreKit receipt → 后端验证 → 短期 token。具体协议 v1.2。
+3. **部署流程**：从手动上传改为 git pull + systemd / Docker / GitHub Actions 之一。
 4. **数据源数据缺失策略**：基金停牌 / 节假日 / 数据延迟时返回什么。
-5. **新基金未收录**：后端是否做 graceful 404；客户端如何展示。
+5. **Portfolio history**：替换 mock，实现真实基金历史聚合。
 
 ---
 
@@ -180,3 +278,4 @@ enum Endpoint {
 
 - v1 stub (2026-04-25) — 仅冻结路由 + Free/Pro 边界。字段 schema 待 GPT 补完 v1.1。
 - v1 stub (2026-04-25) — 后端代码访问规则确定（§6）：GitHub URL 只读 clone，不进本仓 submodule。等 Elvis 贴 URL。
+- v1.1 (2026-04-25) — 按 `backtester-backend` commit `926c912` 反推真实 schema：修正 fund realtime 为单 code，补 `portfolio/realtime`，标记 `portfolio/history` 仍为 mock。

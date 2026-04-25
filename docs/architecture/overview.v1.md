@@ -461,7 +461,7 @@ enum BNColor {
 | `ios/Algorithms/Radar/` | `docs/algorithms/radar.v1.md` | ✅ 有 |
 | `ios/Algorithms/Backtest/` | `docs/algorithms/backtest.v1.md` | ✅ 有 |
 | `ios/Config/StrategyIntent.swift` | `docs/algorithms/strategy_intent.v1.md` | ✅ 有 |
-| `ios/Networking/Endpoints.swift` | `docs/contracts/api.v1.md` | ⚠️ stub（GPT 待补完整 schema，依赖 Elvis 给后端代码访问路径）|
+| `ios/Networking/Endpoints.swift` | `docs/contracts/api.v1.md` | ✅ v1.1（按后端 commit `926c912` 反推；`portfolio/history` 仍为 mock，不可生产使用）|
 | `ios/Services/ImportService.swift` | `docs/contracts/json_import.v1.md` | ✅ 有 |
 | `ios/Services/ImportService.swift`（旧 app 兼容）| `docs/contracts/legacy_fundmvp_mapping.md` | ⚠️ stub（GPT 待补字段对齐，依赖反推旧 Persistence 导出格式）|
 | `ios/DesignSystem/` | `docs/design/project/lib/bn-tokens.css` | ✅ 有 |

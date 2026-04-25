@@ -31,7 +31,7 @@
 当前契约状态：
 
 - `docs/contracts/json_import.v1.md`：可供 Phase 1c 导入实现使用。
-- `docs/contracts/api.v1.md`：仍是 stub，等待 Elvis 提供后端 GitHub URL 后由 GPT 补 v1.1。
+- `docs/contracts/api.v1.md`：已由 GPT 在后续 commit 补到 v1.1；`portfolio/history` 仍为 mock，不可生产使用。
 - `docs/contracts/legacy_fundmvp_mapping.md`：仍是 stub，等待旧 app 导出 / 反推 Persistence 后补 v1.1。
 
 ## Algorithm drift
@@ -75,11 +75,11 @@ Review 结论请追加到 `docs/worklog/2026-04-25_ios_phase1a-algorithms-founda
 
 ## Questions for Elvis
 
-- 后端 GitHub URL 仍待提供。该项不阻塞 Opus 开 Phase 1b，但会阻塞 `api.v1.md` v1.1 与 Pro API 对接。
+- 后端 GitHub URL 已提供：`https://github.com/Escutche0n/backtester-backend`。当前不阻塞 Opus 开 Phase 1b；后续 Pro API 对接前需处理 `portfolio/history` mock 与部署自动化。
 
 ## Next
 
 - [ ] Opus review `2a88ed8` 与本 handoff。
 - [ ] Opus 在 review 通过后开 Phase 1b：Xcode 工程 + App Shell + Holdings mock UI。
-- [ ] GPT 等 Elvis 提供后端 GitHub URL 后补 `api.v1.md` v1.1。
+- [x] GPT 已按后端 GitHub URL 补 `api.v1.md` v1.1。
 - [ ] GPT 在不碰 Phase 1b UI 的前提下，另开小单元补 synthetic fixtures。
