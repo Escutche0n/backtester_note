@@ -114,9 +114,12 @@
 | 风格 | `styleStability` | 组合风格漂移 |
 | 收益 | `sustainability` | 绝对收益（滚动窗口） |
 
-**权重**：0.22 / 0.22 / 0.18 / 0.14 / 0.14 / 0.10（来自旧 app `HoldingsHomeFeature.swift:84-95`，v2 不改）。
+**总分权重**：六维简单平均，每维 `1/6`。与旧 app `HoldingsHomeFeature.swift:20-24` 一致。
+**策略执行子分权重**：`0.22 / 0.22 / 0.18 / 0.14 / 0.14 / 0.10`，仅用于 `strategyExecution` 维度内部子分（旧 app `HoldingsHomeFeature.swift:84-95`），不得当作六维总分权重。
 **展示**：支持 当前 / 上周 / 上月 三快照叠加。
 **重构要求**：权重与阈值必须从旧 app 抽到 `docs/algorithms/radar.v1.md` 单一 config，不再散落代码。
+
+**修改记录**：2026-04-25 09:19 CST，由 GPT 根据 Elvis 明确裁定修正本小节权重口径；原 PRD 文案误把 `strategyExecution` 子分权重写成六维总分权重。
 
 ### 3.5 回测口径
 

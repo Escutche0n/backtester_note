@@ -36,7 +36,7 @@
 ## Questions for Elvis — 已答（2026-04-25）
 
 1. ✅ **Bundle ID** = `com.chenyuefu.backtester-note`（Widgets `.widgets`、App Group `group.com.chenyuefu.backtester-note`）。架构 §8 已更新。
-2. ✅ **最低 iOS = 16+**。Liquid Glass 改为渐进增强（iOS 16/17 fallback 静态 material；iOS 18+ 加 saturation；iOS 26+ 完整效果）。架构 §7 / §8 已更新。
+2. ✅ **最低 iOS = 16+**。后续已由 Elvis 在 2026-04-25 09:24 CST 提升为 **17.4+**，见 `2026-04-25_be_min-ios-17-4.md`。
 3. ✅ **Golden Fixture**：不阻塞实现。改为 schema-first 两步走 —— synthetic fixture 由 Opus 在算法 port 时同步建（按 `json_import.v1` + 算法文档手工构造），real fixture 由 Elvis 自然时机后补。架构 §6.2 / salvage_matrix Golden Fixture 节已更新。
 4. ✅ **App 名 = `回测手记`** 沿用。
 
@@ -48,7 +48,7 @@
 ## Next
 
 - [ ] **GPT** 起草 5 份缺失算法/契约文档（按引用矩阵优先级）：`nav.v1.md` / `radar.v1.md` / `backtest.v1.md` / `strategy_intent.v1.md` / `api.v1.md` + `legacy_fundmvp_mapping.md`。
-- [ ] **Opus** 与 #1 并行：建 Xcode 工程 + 架构 §3 目录骨架（Bundle ID `com.chenyuefu.backtester-note`，最低 iOS 16）。
+- [ ] **Opus** 与 #1 并行：建 Xcode 工程 + 架构 §3 目录骨架（Bundle ID `com.chenyuefu.backtester-note`，最低 iOS 17.4）。
 - [ ] **Opus** 通读 `bn-tokens.css`，预编译成 `BNTokens.swift` 镜像草稿。
 - [ ] **Opus** 算法 port 时同步建 synthetic golden fixture（schema-first）。
 - [ ] **Elvis** 任意时机：导出 1 个真实账户 → `docs/algorithms/golden_fixtures/real/<account_slug>/`（不阻塞 Phase 1 启动，但 ship 前要补）。

@@ -23,7 +23,7 @@ var overallScore: Double {
 
 那组 `0.22/0.22/0.18/0.14/0.14/0.10` 是**单一维度内部** `策略执行 (strategyAlignmentScore)` 的子打分权重（[:84-95](file:///Users/elvischen/Developer/investment%20app/FundMVP/Views/Holdings/HoldingsHomeFeature.swift)）。
 
-**v1 提案（待 Elvis 裁定）**：保持简单平均（每维 1/6 ≈ 0.1667）。
+**v1 决议（Elvis 2026-04-25 确认）**：保持简单平均（每维 1/6 ≈ 0.1667）。
 
 **为什么不加权**（决策记录，Phase 5 重审前不再讨论）：
 - 任何具体加权都需要解释"为什么 A 维比 B 维重要"，当前**没有数据回答**
@@ -214,4 +214,4 @@ struct RadarConfig: Codable {
 ## 7. Changelog
 
 - v1 (2026-04-25) — 初版。修正 PRD v2 §3.4 的权重错置；冻结六维定义、三快照模型、配置外化。详细打分函数公式留 Phase 1a port 时与旧 app 单测对齐补完 v1.1。
-- v1 (2026-04-25) — 雷达总分提议沿用简单平均，待 Elvis 裁定；如确认，加权方案推到 v2/v3。
+- v1 (2026-04-25) — 雷达总分沿用简单平均；加权方案推到 v2/v3。

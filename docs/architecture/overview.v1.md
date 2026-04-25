@@ -151,7 +151,7 @@ ios/
 │   ├── Metrics.swift                # CAGR/Sharpe/Calmar/MaxDD
 │   ├── Radar/
 │   │   ├── RadarScoring.swift       # 6 维打分（rewrite）
-│   │   ├── RadarWeights.swift       # 0.22/0.22/0.18/0.14/0.14/0.10
+│   │   ├── RadarWeights.swift       # 六维总分 1/6；策略执行子权重 0.22/...
 │   │   └── RadarThresholds.swift
 │   └── Backtest/
 │       ├── SingleAsset.swift        # port as-is
@@ -308,7 +308,7 @@ Widget 永不直接调网络、不读 CoreData。它只读 App Group 里 App 写
 | 旧 app 散落处 | 新位置 | 类型 |
 |---|---|---|
 | `targetWeight=0.25` / `driftTolerance=0.08` / `weeklyMinimumContribution=1000` / `emergencyRepairWindowDays=90` / `negligibleDeviation=0.02` | `ios/Config/StrategyIntent.swift` | Codable，默认值在代码、Pro 可在 Settings 改 |
-| 雷达权重 0.22/0.22/0.18/0.14/0.14/0.10 + 7 个打分函数阈值 | `ios/Config/RadarConfig.swift` + `docs/algorithms/radar.v1.md` | 默认值锁定，文档为准 |
+| 雷达总分权重 1/6 + 策略执行子权重 0.22/0.22/0.18/0.14/0.14/0.10 + 7 个打分函数阈值 | `ios/Config/RadarConfig.swift` + `docs/algorithms/radar.v1.md` | 默认值锁定，文档为准 |
 | `navPrecision=4` / `navZeroTolerance=0.0001` | `ios/Algorithms/Constants.swift` | 编译期常量 |
 | 再平衡阈值 `0.08` 多处 | `ios/Config/StrategyIntent.swift` | 同上 |
 
@@ -427,7 +427,7 @@ enum BNColor {
 
 **Liquid Glass（渐进增强）**：
 
-- iOS 16/17：`BNGlassModifier` fallback 到 `.regularMaterial` + 静态高光层，不带 saturation boost / 动态折射
+- iOS 17.4：`BNGlassModifier` fallback 到 `.regularMaterial` + 静态高光层，不带 saturation boost / 动态折射
 - iOS 18+：加 saturation 与 inner highlight
 - iOS 26+：完整 Liquid Glass —— 复刻 chat1 里"more native Liquid Glass"那一轮（多层 backdrop blur + saturation boost + inner top highlight + soft radial shine + 背景 ambient gradient wash）
 
@@ -439,7 +439,7 @@ enum BNColor {
 
 | 项 | 决定 |
 |---|---|
-| 最低 iOS | **iOS 16+**（覆盖率优先；Liquid Glass 视为渐进增强，见 §7）|
+| 最低 iOS | **iOS 17.4+**（覆盖率与现代 SwiftUI 能力折中；Liquid Glass 视为渐进增强，见 §7）|
 | 包管理 | SwiftPM only。**不引入** CocoaPods / Carthage |
 | 三方依赖（运行时）| 默认 0 个。AGENTS.md 红线 2。例外按 PRD §5 红线 2 走 |
 | 开发期工具 | **SwiftLint** + **swift-format**（iOS）；**ruff** + **black**（如未来 backend 进新仓，Python）。开发期工具不进二进制，不违反零三方红线。配置文件落 `.swiftlint.yml` / `.swift-format` |
@@ -467,7 +467,7 @@ enum BNColor {
 | `ios/DesignSystem/` | `docs/design/project/lib/bn-tokens.css` | ✅ 有 |
 | `ios/` 整体迁移决策 | `docs/algorithms/salvage_matrix.md` | ✅ 有 |
 
-**Phase 1a 解锁条件**：4 份算法文档（nav/radar/backtest/strategy_intent）✅ + Elvis 裁定 XIRR / Radar 两处 Algorithm drift。
+**Phase 1a 解锁条件**：4 份算法文档（nav/radar/backtest/strategy_intent）✅ + Elvis 已裁定 XIRR / Radar 两处 Algorithm drift。
 **Phase 3 解锁条件**：`api.v1.md` 完整 schema（GPT 完成）。
 **Phase 1c 解锁条件**：`legacy_fundmvp_mapping.md` 完整字段表（GPT 完成）。
 
@@ -502,15 +502,15 @@ PRD §9 的 Phase 1 在工程上拆为三个可独立 ship 的子阶段，避免
 - ✅ `docs/contracts/json_import.v1.md`
 - ✅ `docs/design/`（设计稿 + chat 记录）
 
-**冲突待裁定**：
-- ⚠️ `docs/collaboration/AGENT_WORKFLOW.md` 是**旧**版（GPT=dev / Opus=review 轮转），与 AGENTS.md（Opus=iOS / GPT=backend 并行）**不一致**。建议：删除或改为指向 AGENTS.md 的 stub。等 Elvis 确认。
+**已处理冲突**：
+- ✅ `docs/collaboration/AGENT_WORKFLOW.md` 已改为 deprecated stub，指向 AGENTS.md。旧轮转协议不再作为权威。
 
 **Phase 0 工程债**（开干前必须做的事，按依赖顺序）：
 
 1. ✅ `git add` + commit 当前 `AGENTS.md` + `docs/` 全量为 baseline（防闪退丢档）—— 完成于 commit `11cb772`
 2. ✅ 处理 §11 的 collaboration workflow 冲突 —— 改为 deprecated stub
 3. ✅ 补 salvage_matrix 工作的 worklog
-4. ⏳ 补 5 份缺的算法/契约文档（GPT 主笔，按引用矩阵）—— synthetic fixture 与之并行
+4. ✅ 补 5 份缺的算法/契约文档（GPT 主笔，按引用矩阵）—— 完成于 commit `d930f75`
 5. ⏳ 建 Xcode 工程 + 上面 §3 的目录骨架（Opus）—— 可与 #4 并行启动
 6. ⏳ 开始 Algorithms 层 port + synthetic fixture 单测
 7. ⏳ Real golden fixture（Elvis 导出，Phase 1 ship 前任意时机补）
@@ -531,3 +531,4 @@ PRD §9 的 Phase 1 在工程上拆为三个可独立 ship 的子阶段，避免
   - §8 加 SwiftLint / swift-format 行；加 Xcode 工程顶层目录决议待 Phase 1b 在 worklog 落地
   - §9 引用矩阵：4 份算法文档已交付（nav/radar/backtest/strategy_intent），api 与 legacy_fundmvp_mapping 改为 stub 状态；Phase 1a/3/1c 解锁条件明确化
   - §10 Phase 1 拆为 1a/1b/1c 三个可独立 ship 子阶段
+- v1.3 (2026-04-25) — Elvis 决议落地：最低 iOS 从 `16+` 提升到 `17.4+`。

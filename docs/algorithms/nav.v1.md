@@ -170,7 +170,7 @@ func cagr(startValue: Double, endValue: Double, startDate: Date, endDate: Date) 
 
 `31_556_926` 秒 ≈ 365.2422 天 ≈ 一回归年；`86400 * 365` 秒 = 365.0 天。
 
-**v1 提案**：两边都用 `365.0` 天分母（即 BacktestEngine 的版本）。理由：账户 NAV 与回测产出的 XIRR 必须可对账，统一分母。**这是与旧 HoldingsNAVCalculator 的 1 处口径偏移**，需要 Elvis 在 worklog 里 ✅ 后才能进入实现。
+**v1 决议（Elvis 2026-04-25 确认）**：两边都用 `365.0` 天分母（即 BacktestEngine 的版本）。理由：账户 NAV 与回测产出的 XIRR 必须可对账，统一分母。**这是与旧 HoldingsNAVCalculator 的 1 处口径偏移**，已由 Elvis 明确豁免红线 5。
 
 伪码（统一版）：
 
@@ -302,4 +302,4 @@ CI：`AlgorithmsTests` import fixture，diff > 1e-4 fail。
 ## 7. Changelog
 
 - v1 (2026-04-25) —— 初版。从旧 [HoldingsNAVCalculator.swift](file:///Users/elvischen/Developer/investment%20app/FundMVP/Views/Holdings/HoldingsNAVCalculator.swift) port 逻辑，重写 API。
-  - **口径偏移待 Elvis 裁定**：XIRR 时间归一化提议统一为 `86400*365.0`。旧 HoldingsNAVCalculator 用 `31_556_926` → 与本版会有 ~0.07% 量级数字差；若 Elvis 确认，这部分差异才可豁免红线 5。旧 BacktestEngine `86400*365` 与本版一致。
+  - **口径偏移已裁定**：XIRR 时间归一化统一为 `86400*365.0`。旧 HoldingsNAVCalculator 用 `31_556_926` → 与本版会有 ~0.07% 量级数字差；Elvis 已确认这部分差异豁免红线 5。旧 BacktestEngine `86400*365` 与本版一致。

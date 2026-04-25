@@ -22,7 +22,7 @@ Changelog 写为 v1.2。
 
 | 文件 | 状态 | 说明 |
 |---|---|---|
-| `docs/algorithms/nav.v1.md` | ✅ 完整 | TWRR + Ledger + CAGR / XIRR / Sharpe / Calmar / MaxDD + 持有收益。**含 1 处口径偏移提案**（§4.2，详见 ## Algorithm drift）|
+| `docs/algorithms/nav.v1.md` | ✅ 完整 | TWRR + Ledger + CAGR / XIRR / Sharpe / Calmar / MaxDD + 持有收益。**含 1 处已裁定口径偏移**（§4.2，详见 ## Algorithm drift）|
 | `docs/algorithms/radar.v1.md` | ✅ 完整骨架 | 六维定义 + 三快照 + StrategyIntent 子分公式 + RadarConfig 外化。**修正 PRD v2 §3.4 一处口径错误**（详见 ## Algorithm drift）。各维度详细公式留 Phase 1a port 时与旧 app 单测对齐补 v1.1。 |
 | `docs/algorithms/backtest.v1.md` | ✅ 完整 | 单基金 / 三种组合策略 / 阈值再平衡 snapshot 冻结 / SIP 计划生成 / 赎回费分级 |
 | `docs/algorithms/strategy_intent.v1.md` | ✅ 完整 | 6 个常量字段 + 用途索引 + Free/Pro 边界 |
@@ -51,11 +51,11 @@ Changelog 写为 v1.2。
 | `HoldingsNAVCalculator.swift:367` | `years = timeIntervalSince(baseDate) / 31_556_926`（一回归年 ≈ 365.2422 天）|
 | `BacktestEngine.swift:1032` | `years = (timeInterval / 86400) / 365.0`（365 天）|
 
-**v1 提案**：统一为 **`365.0`**（即 BacktestEngine 版本）。理由：账户 XIRR 与回测 XIRR 必须可对账。
+**v1 决议（Elvis 2026-04-25 确认）**：统一为 **`365.0`**（即 BacktestEngine 版本）。理由：账户 XIRR 与回测 XIRR 必须可对账。
 
 **影响**：与旧 app 持仓 XIRR 数字会有微小差异（年化 ~0.07% 量级），**可能触发 0.01% 漂移红线**。
 
-需要 Elvis ✅ 才能进 Phase 1a。
+Elvis 已确认，Phase 1a 可按 `365.0` 口径实现。
 
 ### Drift 2 · 雷达总分权重（修正 PRD v2 §3.4 错置）
 
@@ -74,13 +74,9 @@ var overallScore: Double {
 
 那组 `0.22/0.22/0.18/0.14/0.14/0.10` 是**单一维度内部** `策略执行` 的子分权重（[`:84-95`](file:///Users/elvischen/Developer/investment%20app/FundMVP/Views/Holdings/HoldingsHomeFeature.swift)）。
 
-**v1 提案**：六维总分保持简单平均（每维 1/6 ≈ 0.1667），与旧 app 数字一致。子权重 0.22/0.22/... 用在 strategyExecution 维度内部（[radar.v1.md §3.2](../algorithms/radar.v1.md)）。
+**v1 决议（Elvis 2026-04-25 确认）**：六维总分保持简单平均（每维 1/6 ≈ 0.1667），与旧 app 数字一致。子权重 0.22/0.22/... 用在 strategyExecution 维度内部（[radar.v1.md §3.2](../algorithms/radar.v1.md)）。
 
-**需要 Elvis 决定**：
-- (a) ✅ 保持简单平均（不修改 PRD v2 §3.4 文案，因为已与本文不同；改 PRD v2 文字描述但口径不变）
-- (b) 想改成加权平均 → 是口径变更 → 走 PRD 改写流程
-
-`radar.v1.md` 已经按 (a) 写好。如果 Elvis 确认 (a)，下次 PRD 起草人需把 PRD v2 §3.4 那句话改写为"权重：每维 1/6（简单平均）；子分 0.22/0.22/.../0.10 用于策略执行维度内部"。
+PRD v2 §3.4 已由 GPT 于 2026-04-25 09:19 CST 按 Elvis 授权修正为："总分权重：每维 1/6（简单平均）；策略执行子分权重 0.22/0.22/.../0.10"。
 
 ## Review
 
@@ -88,9 +84,7 @@ var overallScore: Double {
   - 4 份算法文档（nav/radar/backtest/strategy_intent）公式与他读过的旧 app 实现是否完全一致
   - 2 处口径 drift 是否同意决议（特别是 XIRR 365.0 那条）
   - api.v1.md / legacy_fundmvp_mapping.md 的 stub 范围是否合理
-- ⏳ 等 Elvis 拍板：
-  - Drift 1（XIRR 365.0）→ ✅ / 否决
-  - Drift 2（雷达简单平均）→ (a) / (b)
+- ⏳ 等 Elvis 提供：
   - 后端代码访问路径（api.v1.md §6.1）
 
 ## Conflict
@@ -99,9 +93,9 @@ var overallScore: Double {
 
 ## Questions for Elvis
 
-1. **XIRR 时间归一化统一为 365.0 天**：✅ 同意还是要保留 HoldingsNAVCalculator 的 31_556_926？
-2. **雷达总分用简单平均**（与旧 app 一致）还是想改成加权平均？
-3. **后端代码访问路径**：旧 backend repo 路径是什么？或允许 GPT 通过抓 `http://159.75.16.87` 实际响应反推 schema？（影响 `api.v1.md` v1.1 完整化）
+1. ✅ **XIRR 时间归一化统一为 365.0 天**。
+2. ✅ **雷达总分用简单平均**（每维 1/6），策略执行维度内部继续使用 0.22/0.22/.../0.10 子权重。
+3. ⏳ **后端代码访问路径**：旧 backend repo GitHub URL 待 Elvis 提供（影响 `api.v1.md` v1.1 完整化）。
 
 ## Ideas
 
@@ -110,8 +104,9 @@ var overallScore: Double {
 
 ## Next
 
-- [ ] **Elvis** 答 ## Questions for Elvis 三条
+- [x] **Elvis** 裁定 XIRR / Radar 两处口径 drift
+- [ ] **Elvis** 提供后端 GitHub URL
 - [ ] **Opus** review 本次产出（4 份算法 + 2 份 stub + 架构 v1.2 微调）
-- [ ] **Opus** 收到 Elvis ✅ 后开 Phase 1a：Algorithms 层 port + synthetic fixture（按 [nav.v1.md §6](../algorithms/nav.v1.md) / [radar.v1.md §6](../algorithms/radar.v1.md) / [backtest.v1.md §8](../algorithms/backtest.v1.md) 列的场景表）
+- [ ] **Opus** 开 Phase 1a：Algorithms 层 port + synthetic fixture（按 [nav.v1.md §6](../algorithms/nav.v1.md) / [radar.v1.md §6](../algorithms/radar.v1.md) / [backtest.v1.md §8](../algorithms/backtest.v1.md) 列的场景表）
 - [ ] **GPT** 待 Elvis 给后端代码路径后补 `api.v1.md` v1.1 完整 schema
 - [ ] **GPT** 待旧 app 任意时机导出 → 反推 `legacy_fundmvp_mapping.md` v1.1 字段表
