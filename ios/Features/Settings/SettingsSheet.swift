@@ -1,6 +1,11 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsSheet: View {
+    @State private var importing = false
+    @State private var preview: ImportPreview?
+    @State private var importError: String?
+
     var body: some View {
         NavigationStack {
             List {
@@ -16,6 +21,20 @@ struct SettingsSheet: View {
             .background(BNTokens.Colors.backgroundElevated)
             .navigationTitle("设置")
             .preferredColorScheme(.dark)
+            .fileImporter(
+                isPresented: $importing,
+                allowedContentTypes: [.json, .plainText],
+                allowsMultipleSelection: false,
+                onCompletion: handleImportResult
+            )
+            .sheet(item: $preview) { preview in
+                ImportPreviewView(preview: preview)
+            }
+            .alert("导入失败", isPresented: importErrorBinding) {
+                Button("知道了", role: .cancel) {}
+            } message: {
+                Text(importError ?? "")
+            }
         }
     }
 
@@ -43,7 +62,12 @@ struct SettingsSheet: View {
 
     private var shortcutsSection: some View {
         Section("快捷指令 & JSON 导入") {
-            SettingsRow(title: "导入模板", value: "3 个", systemImage: "square.and.arrow.down")
+            Button {
+                importing = true
+            } label: {
+                SettingsRow(title: "选择 JSON 文件", value: "预览", systemImage: "square.and.arrow.down")
+            }
+            .buttonStyle(.plain)
             SettingsRow(title: "最近导入", value: "暂无", systemImage: "doc.text")
         }
     }
@@ -64,6 +88,37 @@ struct SettingsSheet: View {
     private var subscriptionSection: some View {
         Section("订阅") {
             SettingsRow(title: "Pro", value: "即将推出", systemImage: "sparkles")
+        }
+    }
+
+    private var importErrorBinding: Binding<Bool> {
+        Binding(
+            get: { importError != nil },
+            set: { isPresented in
+                if !isPresented {
+                    importError = nil
+                }
+            }
+        )
+    }
+
+    private func handleImportResult(_ result: Result<[URL], Error>) {
+        do {
+            guard let url = try result.get().first else {
+                return
+            }
+
+            let accessed = url.startAccessingSecurityScopedResource()
+            defer {
+                if accessed {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+
+            let data = try Data(contentsOf: url)
+            preview = ImportService.preview(data: data)
+        } catch {
+            importError = error.localizedDescription
         }
     }
 }
