@@ -45,27 +45,20 @@
 
 ---
 
-## Golden Fixture 流程（Phase 1 阻塞项）
+## Golden Fixture 流程（schema-first 两步走）
 
 **为什么需要**：[PRD v2 §5 红线 4](../prd/Backtester_Note_PRD_v2.md) 说数字漂移 > 0.01% 必须停。靠人肉对数不可持续，必须 CI 自动化。
 
-**怎么做**：
-1. Elvis 在旧 app 里选 1~3 个代表性账户，导出 JSON（持仓 + 流水）
-2. 在旧 app 里截屏 / 导出那些账户算出的：
-   - NAV 曲线（每日点，至少最近 1 年）
-   - XIRR
-   - 持有收益 / 持有收益率
-   - 雷达六维当前分 + 上周 + 上月
-   - 近半年最大回撤 / 夏普 / 卡尔马
-3. Elvis / GPT 把 (输入 JSON, 期望输出 JSON) 存进 `docs/algorithms/golden_fixtures/<account_slug>/`
-4. 新 repo 的单元测试 import 这些 fixture，算一遍，diff > 0.01% 挂 CI
+**详细流程见 [架构 §6.2](../architecture/overview.v1.md)**。要点：
 
-**最小起步**：一个账户。
+- **Step 1（不阻塞）**：synthetic fixture 由 Opus 在算法 port 时按 `json_import.v1` + 算法文档手工构造，单元测试驱动力。放 `docs/algorithms/golden_fixtures/synthetic/<scenario>/`。
+- **Step 2（Phase 1 ship 前补）**：real fixture 由 Elvis 自然时机从旧 app 导出，与旧 app 数字交叉验证。放 `docs/algorithms/golden_fixtures/real/<account_slug>/`。
 
-**状态**：⏳ 等 Elvis 导出。这是 Phase 1 实际阻塞项。
+**当前状态**：Step 1 与算法 port 同步推进；Step 2 不卡进度，等 Elvis。
 
 ---
 
 ## Changelog
 
 - v1 (2026-04-25) — 初版，基于 Explore agent 的旧 app survey
+- v1.1 (2026-04-25) — Golden Fixture 流程改为 schema-first 两步走，详见架构 §6.2；real fixture 不再标 Phase 1 阻塞项

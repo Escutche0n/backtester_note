@@ -33,12 +33,12 @@
 
 无未决冲突。`docs/collaboration/AGENT_WORKFLOW.md` 已按 AGENTS.md 收敛为 stub。
 
-## Questions for Elvis
+## Questions for Elvis — 已答（2026-04-25）
 
-1. **Bundle ID** 当前用 `com.elvis.backtester-note`（架构 §8）。如有公司/个人开发者账号偏好的前缀（例如 `app.peakwatch.*` 之类），请确认改名时机。
-2. **iOS 最低版本** 暂定 iOS 26（架构 §8，与 Liquid Glass 设计对齐）。这意味着只能跑在很新的设备上，确认这是预期。
-3. **Golden Fixture**（PRD §3.3 红线 4 / salvage_matrix Phase 1 阻塞项）：你导出 1 个真实账户的 input.json + expected NAV/XIRR/雷达/回测指标 → 放 `docs/algorithms/golden_fixtures/<account_slug>/`。这是 Algorithms 层进入实现前的硬阻塞。
-4. **App 名**：PRD v2 标"暂用名 `回测手记`"；改名窗口期？还是先按这个名字落代码、上架前再换？
+1. ✅ **Bundle ID** = `com.chenyuefu.backtester-note`（Widgets `.widgets`、App Group `group.com.chenyuefu.backtester-note`）。架构 §8 已更新。
+2. ✅ **最低 iOS = 16+**。Liquid Glass 改为渐进增强（iOS 16/17 fallback 静态 material；iOS 18+ 加 saturation；iOS 26+ 完整效果）。架构 §7 / §8 已更新。
+3. ✅ **Golden Fixture**：不阻塞实现。改为 schema-first 两步走 —— synthetic fixture 由 Opus 在算法 port 时同步建（按 `json_import.v1` + 算法文档手工构造），real fixture 由 Elvis 自然时机后补。架构 §6.2 / salvage_matrix Golden Fixture 节已更新。
+4. ✅ **App 名 = `回测手记`** 沿用。
 
 ## Ideas
 
@@ -47,7 +47,8 @@
 
 ## Next
 
-- [ ] **GPT** 起草 5 份缺失算法/契约文档（按引用矩阵优先级）。
-- [ ] **Elvis** 导出至少 1 个 golden fixture 账户。
-- [ ] **Opus** 上述两项任意一项就绪后，进入 Phase 2（建 Xcode 工程 + 目录骨架）。
-- [ ] **Opus** 在 Phase 2 之前：把 `bn-tokens.css` 完整通读，预编译成 `BNTokens.swift` 镜像草稿，以便骨架建好后立即接入。
+- [ ] **GPT** 起草 5 份缺失算法/契约文档（按引用矩阵优先级）：`nav.v1.md` / `radar.v1.md` / `backtest.v1.md` / `strategy_intent.v1.md` / `api.v1.md` + `legacy_fundmvp_mapping.md`。
+- [ ] **Opus** 与 #1 并行：建 Xcode 工程 + 架构 §3 目录骨架（Bundle ID `com.chenyuefu.backtester-note`，最低 iOS 16）。
+- [ ] **Opus** 通读 `bn-tokens.css`，预编译成 `BNTokens.swift` 镜像草稿。
+- [ ] **Opus** 算法 port 时同步建 synthetic golden fixture（schema-first）。
+- [ ] **Elvis** 任意时机：导出 1 个真实账户 → `docs/algorithms/golden_fixtures/real/<account_slug>/`（不阻塞 Phase 1 启动，但 ship 前要补）。

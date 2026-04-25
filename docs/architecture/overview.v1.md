@@ -369,11 +369,23 @@ Widget 永不直接调网络、不读 CoreData。它只读 App Group 里 App 写
        └──────────────┘
 ```
 
-### 6.2 Golden Fixture 流程（Phase 1 阻塞项，转载自 salvage_matrix）
+### 6.2 Golden Fixture 流程（schema-first，分两步走）
+
+**Step 1 · Synthetic fixture**（不阻塞，与算法 port 并行）
+
+由 Algorithms 作者根据 [json_import.v1](../contracts/json_import.v1.md) 与算法文档（`docs/algorithms/*.v1.md`）**手工构造**最小代表性 fixture，驱动单元测试。覆盖：
+
+- 单基金 / 多基金 / 含分红 / 含跨期流水 / 含快照前移
+- 每个 NAV 可信度 tag（`confirmed` / `pending_reconcile` / `intraday_estimate` / `snapshot_only` / `flow_only`）至少 1 例
+- expected 值由算法文档的公式手算 + 一份独立实现（例如 Python notebook）交叉验证
+
+放：`docs/algorithms/golden_fixtures/synthetic/<scenario>/`
+
+**Step 2 · Real fixture**（Phase 1 ship 前必须有，由 Elvis 导出）
 
 ```
-docs/algorithms/golden_fixtures/<account_slug>/
-├── input.json                # json_import.v1 格式
+docs/algorithms/golden_fixtures/real/<account_slug>/
+├── input.json                # json_import.v1 格式，从旧 app 导出
 ├── expected/
 │   ├── nav_curve.csv         # date, nav, tag
 │   ├── xirr.txt              # 单值
@@ -381,12 +393,14 @@ docs/algorithms/golden_fixtures/<account_slug>/
 │   ├── radar_current.json    # 6 维 + 总分
 │   ├── radar_lastweek.json
 │   └── radar_lastmonth.json
-└── source.md                 # Elvis 导出来源、日期
+└── source.md                 # 导出来源、日期、旧 app commit
 ```
 
-**CI 规则**：`AlgorithmsTests` 跑每个 fixture，diff > 0.01% → fail。触发 [AGENTS.md 红线 5](../../AGENTS.md#红线无例外)（algorithm drift）。
+real fixture 是 [PRD §3.3 红线 4](../prd/Backtester_Note_PRD_v2.md) 的承载物：与旧 app 数字漂移 > 0.01% 触发 [AGENTS.md 红线 5](../../AGENTS.md#红线无例外)。
 
-**起步**：1 个账户即可。
+**CI 规则**：`AlgorithmsTests` 跑所有可用 fixture（synthetic 必跑，real 命中即跑），diff > 0.01% → fail。
+
+**当前状态**：Step 1 由 Opus 在算法 port 时同步建。Step 2 等 Elvis 自然时机，不卡进度。
 
 ---
 
@@ -411,7 +425,13 @@ enum BNColor {
 
 **红绿翻转**：`@AppStorage("pnlColorInvert")` Bool；`BNColor.up`/`down` 返回 computed property 根据 flag 反转。
 
-**Liquid Glass**：`BNGlassModifier` 用 `.regularMaterial` + 自定义 saturation/inner highlight 复刻 chat1 里"more native Liquid Glass"那一轮的效果。
+**Liquid Glass（渐进增强）**：
+
+- iOS 16/17：`BNGlassModifier` fallback 到 `.regularMaterial` + 静态高光层，不带 saturation boost / 动态折射
+- iOS 18+：加 saturation 与 inner highlight
+- iOS 26+：完整 Liquid Glass —— 复刻 chat1 里"more native Liquid Glass"那一轮（多层 backdrop blur + saturation boost + inner top highlight + soft radial shine + 背景 ambient gradient wash）
+
+实现：`BNGlassModifier` 内部 `if #available(iOS 26, *)` 分支。视觉降级**不影响**布局尺寸 / 圆角 / 颜色 token —— 那些层次在所有 iOS 上一致。
 
 ---
 
@@ -419,11 +439,11 @@ enum BNColor {
 
 | 项 | 决定 |
 |---|---|
-| 最低 iOS | iOS 26（与设计稿 Liquid Glass 对齐）|
+| 最低 iOS | **iOS 16+**（覆盖率优先；Liquid Glass 视为渐进增强，见 §7）|
 | 包管理 | SwiftPM only。**不引入** CocoaPods / Carthage |
 | 三方依赖 | 默认 0 个。AGENTS.md 红线 2。例外按 PRD §5 红线 2 走 |
-| Bundle ID | App: `com.elvis.backtester-note` · Widgets: `com.elvis.backtester-note.widgets` |
-| App Group | `group.com.elvis.backtester-note` |
+| Bundle ID | App: `com.chenyuefu.backtester-note` · Widgets: `com.chenyuefu.backtester-note.widgets` |
+| App Group | `group.com.chenyuefu.backtester-note` |
 | Xcode Scheme | 一个 App scheme + 一个 Widget scheme + 一个 Tests scheme |
 | Concurrency | Swift Concurrency（async/await + actor）。Combine 仅用于 `@Published` 桥接 |
 | Logging | `os.Logger`，不接三方 |
@@ -453,7 +473,7 @@ enum BNColor {
 
 | PRD §9 阶段 | 本架构需要落地的东西 |
 |---|---|
-| **Phase 1 · 骨架** | App Shell + Holdings Feature + Settings + Algorithms（NAV/Radar/Metrics/XIRR）+ Persistence + ImportService + DesignSystem + Golden Fixture CI |
+| **Phase 1 · 骨架** | App Shell + Holdings Feature + Settings + Algorithms（NAV/Radar/Metrics/XIRR）+ Persistence + ImportService + DesignSystem + Synthetic Golden Fixture CI（Real fixture ship 前补）|
 | **Phase 2 · 回测与 Widgets** | Backtest Feature + Algorithms/Backtest + WidgetsExt 三个 + WidgetSyncService（Free 路径）+ 快捷指令模板 |
 | **Phase 3 · Pro 自动化** | StoreKit + Entitlement.pro 路径开通 + WidgetSyncService Pro 路径 + 退避/离线 |
 | **Phase 4 · 上架** | 隐私清单、合规文案、TestFlight |
@@ -475,15 +495,22 @@ enum BNColor {
 
 **Phase 0 工程债**（开干前必须做的事，按依赖顺序）：
 
-1. `git add` + commit 当前 `AGENTS.md` + `docs/` 全量为 baseline（防闪退丢档）
-2. 处理 §11 的 collaboration workflow 冲突
-3. 补 salvage_matrix 工作的 worklog（按 AGENTS.md 规矩）
-4. 补 5 份缺的算法/契约文档（GPT 主笔）+ 至少 1 个 golden fixture（Elvis 导出）
-5. 建 Xcode 工程 + 上面 §3 的目录骨架（Opus）
-6. 才能开始 Algorithms 层 port
+1. ✅ `git add` + commit 当前 `AGENTS.md` + `docs/` 全量为 baseline（防闪退丢档）—— 完成于 commit `11cb772`
+2. ✅ 处理 §11 的 collaboration workflow 冲突 —— 改为 deprecated stub
+3. ✅ 补 salvage_matrix 工作的 worklog
+4. ⏳ 补 5 份缺的算法/契约文档（GPT 主笔，按引用矩阵）—— synthetic fixture 与之并行
+5. ⏳ 建 Xcode 工程 + 上面 §3 的目录骨架（Opus）—— 可与 #4 并行启动
+6. ⏳ 开始 Algorithms 层 port + synthetic fixture 单测
+7. ⏳ Real golden fixture（Elvis 导出，Phase 1 ship 前任意时机补）
 
 ---
 
 ## 12. Changelog
 
 - v1 (2026-04-25) — 初版。整合 PRD v2 + salvage_matrix + json_import + design + AGENTS.md 为单一架构权威。
+- v1.1 (2026-04-25) — Elvis 决议落地：
+  - Bundle ID `com.elvis.*` → `com.chenyuefu.*`（App / Widgets / App Group 全套）
+  - 最低 iOS `26` → `16+`，Liquid Glass 改为渐进增强（§7）
+  - Golden Fixture 改为 schema-first 两步走（§6.2）：synthetic 由 Opus 与算法 port 同步建，real 由 Elvis 后补，不阻塞 Phase 1 启动
+  - App 名 `回测手记` 确认沿用
+  - §11 Phase 0 前三项标记完成
