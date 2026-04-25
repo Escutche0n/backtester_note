@@ -42,6 +42,18 @@
 | `docs/design/` | Elvis / Claude Design | AI 只读，设计调整写 request |
 | `docs/worklog/` | 谁干活谁写 | 每次收工必须补 |
 
+## 协作地图
+
+| 对象 | 位置 / 地址 | 作用 |
+|---|---|---|
+| Elvis | 本人 | 产品裁定、红线确认、商业决策、提供必要资料 |
+| 新 iOS 主仓 | `/Users/elvischen/Developer/backtester_note` | iOS app、文档、契约、算法口径、worklog |
+| 后端本地 clone | `/Users/elvischen/Developer/backtester_backend` | 后端代码工作目录，GPT 可按需修改优化 |
+| 后端 GitHub | `https://github.com/Escutche0n/backtester-backend` | 后端源码权威 |
+| 线上后端 | `http://159.75.16.87` | 当前真实运行服务地址，是部署结果，不是源码权威 |
+| Opus | AI | iOS 客户端骨架、SwiftUI、Widgets、本地存储、视觉实现 |
+| GPT | AI | 后端、API contract、数据抓取、schema、缓存、部署、算法口径文档 |
+
 ## 权威文档
 
 | 文档 | 用途 |

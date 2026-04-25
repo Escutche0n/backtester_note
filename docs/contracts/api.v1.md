@@ -260,7 +260,7 @@ enum Endpoint {
 
 - **GitHub URL**：`https://github.com/Escutche0n/backtester-backend`
 - **已核对 commit**：`926c912 add portfolio realtime endpoint`
-- **本地 clone 路径**：按需 clone 到 `/tmp/backtester-backend` 或 `~/Developer/backtester_backend_readonly/`
+- **本地 clone 路径**：`/Users/elvischen/Developer/backtester_backend`
 - **关系**：后端独立 repo，不进本仓 submodule。本仓只保存 iOS 依赖的 API contract。
 - **部署现状**：Elvis 当前手动下载后端文件并上传服务器运行。GPT 可后续在后端 repo 内优化部署流程，优先目标是减少手动上传。
 

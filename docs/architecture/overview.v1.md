@@ -18,7 +18,7 @@
 | [bn-tokens.css](../design/project/lib/bn-tokens.css) + [bn-*.jsx](../design/project/lib/) | UI token、组件层级、Liquid Glass 风格 |
 | [AGENTS.md](../../AGENTS.md) | 协作分工（Opus=iOS, GPT=backend）、红线 |
 | 旧 app `/Users/elvischen/Developer/investment app/` | 算法实现的数字基准（仅参考，不搬运结构）|
-| 旧后端 `/Users/elvischen/Developer/backtester_backend/` + `http://159.75.16.87` | Pro 数据源，复用不复制 |
+| 后端本地 clone `/Users/elvischen/Developer/backtester_backend` + GitHub `https://github.com/Escutche0n/backtester-backend` + 线上 `http://159.75.16.87` | Pro 数据源。GitHub / 本地 clone 是源码权威；线上地址是部署结果 |
 
 ---
 
@@ -40,10 +40,10 @@
                                                └───────────────────┘
 
    旧 iOS app = 算法数字基准（golden fixture 来源），不直接调用、不搬运代码。
-   旧后端 = 直接复用线上实例，不在新仓库 fork。
+   后端源码 = 独立 repo（本地 clone `/Users/elvischen/Developer/backtester_backend`），线上实例 = 159.75.16.87。
 ```
 
-**新仓库职责**：只装新 iOS 客户端 + 文档 + 契约。后端不进新仓。
+**新仓库职责**：只装新 iOS 客户端 + 文档 + 契约。后端不进新仓；后端改动在 `backtester-backend` repo 处理。
 
 ---
 
