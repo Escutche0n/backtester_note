@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-25
-- 上次更新者：Claude（修 P2-1 Radar.swift sustainabilityScore 默认 calendar）
+- 上次更新者：GPT（临时接手 iOS 1b-3 Holdings mock UI）
 
 ---
 
@@ -22,8 +22,8 @@
 | 1a-fix | P2-1 Radar.swift sustainabilityScore 删除 calendar 参数（强制 Asia/Shanghai）+ deterministic 回归测试 | ⏳ Codex 复审第二轮 | 本次 | Claude |
 | 1b-1 | App Shell（xcodegen + 两 Tab + Widgets extension 占位） | ✅ done | `7743d4a` | Opus |
 | 1b-2 | DesignSystem / BNTokens（color / typography / spacing token 层） | ✅ done | `3a38419` | Opus |
-| 1b-3 | Holdings mock UI（用 token 画 Card / Chip / Row 第一片 + ambient gradient 落 RootView） | 🔜 next | — | Opus |
-| 1b-4 | Settings sheet 壳 + 回测 Tab 第一屏 | 待排 | — | Opus |
+| 1b-3 | Holdings mock UI（用 token 画 Card / Chip / Row 第一片 + ambient gradient 落 RootView） | ✅ done | 本次 | GPT（Elvis 临时指派） |
+| 1b-4 | Settings sheet 壳 + 回测 Tab 第一屏 | 🔜 next | — | GPT（Elvis 临时指派） |
 | 1c | ImportService（快捷指令 JSON 导入） | 待排 | — | Opus |
 | 1d | Networking + portfolio/history 接入 | 待排 | — | Opus |
 | 1e | NAV / 雷达图渲染 | 待排 | — | Opus |
@@ -43,6 +43,7 @@
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
 - 2026-04-25 · sustainability 月度分桶**强制 Asia/Shanghai**，`sustainabilityScore` API 删除 calendar 参数（不留默认值留口子）。产品定位决定 —— 国内基金工具按非 CN 时区看盘无意义 · radar.v1.md v1.2 / Radar.swift / Codex P2-1 二轮 review
+- 2026-04-25 · Elvis 临时指派 GPT 接手 iOS Phase 1b-3；本次只做 Holdings mock UI，不提前实现 1b-4 Settings / Backtest · 2026-04-25_ios_phase1b-3-holdings-mock-ui worklog
 - 2026-04-25 · 雷达三快照锚点：日历天（7/30）→ **交易日 5/22**；BNCalendar 不需要"往前推 N 交易日"，由 RadarService 层用 `RadarConfig.lastWeek/lastMonthTradingDayOffset` 处理 · radar.v1.md v1.1
 - 2026-04-25 · 雷达六维窗口期：**差异化默认（180/90 混合）+ RadarConfig 字段进 Pro 可调**；明确拒绝"统一 90 天" · radar.v1.md §4.2 决议 (b)
 - 2026-04-25 · sustainability 公式落地：4 子分 weighted（0.25/0.30/0.25/0.20）+ 8 个阈值字段，全部进 RadarConfig · radar.v1.md §3.6
@@ -93,7 +94,7 @@
 
 ## 5. 下一步
 
-- **iOS（Opus）**：commit D · Holdings mock UI（含 ambient gradient 落 RootView）。雷达代码与文档已 v1.1 同步。
+- **iOS（GPT 临时接手）**：Phase 1b-4 · Settings sheet 壳 + 回测 Tab 第一屏。
 - **Backend（GPT）**：`portfolio/history` 真实化（待 GPT 自排时机）
 - **Meta**：ARCH §8 回填 ✅ 完成（v1.3）。雷达 v1.1 ✅ 完成。下一个 Meta 任务待 Opus 1b 全部落完时校对 ARCH §3 目录骨架"最终态" vs "已落地"差异。
 

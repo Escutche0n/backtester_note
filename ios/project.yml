@@ -33,6 +33,7 @@ targets:
     sources:
       - path: App
       - path: DesignSystem
+      - path: Features
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chenyuefu.backtester-note
