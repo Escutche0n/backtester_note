@@ -1,0 +1,212 @@
+/* Backtester Note — Design tokens + shared primitives
+   PeakWatch-inspired dark dashboard for iOS 26
+*/
+
+:root {
+  /* Surfaces — warm near-black */
+  --bn-bg: #0B0B0D;
+  --bn-bg-elev: #141418;
+  --bn-surface: #17171C;
+  --bn-surface-2: #1E1E24;
+  --bn-border: rgba(255,255,255,0.06);
+  --bn-border-strong: rgba(255,255,255,0.10);
+  --bn-hairline: rgba(255,255,255,0.04);
+
+  /* Text */
+  --bn-fg: #F2F2F5;
+  --bn-fg-dim: rgba(242,242,245,0.62);
+  --bn-fg-mute: rgba(242,242,245,0.38);
+  --bn-fg-faint: rgba(242,242,245,0.22);
+
+  /* Semantic — CN market (red up, green down) */
+  --bn-up: #F6465D;
+  --bn-up-soft: rgba(246,70,93,0.14);
+  --bn-up-line: rgba(246,70,93,0.9);
+  --bn-down: #2EBD85;
+  --bn-down-soft: rgba(46,189,133,0.14);
+  --bn-down-line: rgba(46,189,133,0.9);
+
+  /* Accent — warm amber (single, neutral tone) */
+  --bn-accent: #E3B15C;
+  --bn-accent-dim: rgba(227,177,92,0.18);
+  --bn-benchmark: #7A8AA8; /* cool gray-blue for 沪深300 ref line */
+
+  /* Radii — iOS 26 continuous corners */
+  --bn-r-sm: 10px;
+  --bn-r-md: 14px;
+  --bn-r-lg: 20px;
+  --bn-r-xl: 28px;
+
+  /* Type */
+  --bn-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+  --bn-mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+.bn-root {
+  font-family: var(--bn-sans);
+  color: var(--bn-fg);
+  background: var(--bn-bg);
+  letter-spacing: -0.01em;
+}
+
+/* Numerics — tabular lining figures, mono */
+.bn-num {
+  font-family: var(--bn-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Scroll */
+.bn-scroll::-webkit-scrollbar { display: none; }
+.bn-scroll { scrollbar-width: none; }
+
+/* Hairline divider — iOS-perfect */
+.bn-hair { background: var(--bn-border); height: 0.5px; }
+
+/* Chip */
+.bn-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: 6px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.bn-chip-up { color: var(--bn-up); background: var(--bn-up-soft); }
+.bn-chip-down { color: var(--bn-down); background: var(--bn-down-soft); }
+.bn-chip-neutral { color: var(--bn-fg-dim); background: rgba(255,255,255,0.05); }
+
+/* Glass surface — iOS 26 Liquid Glass
+   Layered with a real backdrop-filter, a top inner highlight,
+   and a subtle radial shine near the top-left for the "liquid" feel. */
+.bn-glass {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 45%, rgba(255,255,255,0.01) 100%),
+    rgba(22,22,28,0.55);
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: var(--bn-r-lg);
+  box-shadow:
+    inset 0 0.5px 0 rgba(255,255,255,0.12),
+    inset 0 -0.5px 0 rgba(0,0,0,0.2),
+    0 1px 2px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.bn-glass::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 80% at 10% 0%, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0) 45%),
+    radial-gradient(80% 60% at 100% 100%, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0) 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+.bn-glass > * { position: relative; z-index: 1; }
+
+/* Subtle ambient gradient wash for the page bg so the glass has
+   something to refract */
+.bn-root {
+  background:
+    radial-gradient(90% 60% at 0% 0%, rgba(227,177,92,0.06), transparent 50%),
+    radial-gradient(70% 60% at 100% 100%, rgba(122,138,168,0.07), transparent 55%),
+    var(--bn-bg);
+}
+
+/* Tab bar pill — heavier glass */
+.bn-tabbar {
+  backdrop-filter: blur(40px) saturate(2);
+  -webkit-backdrop-filter: blur(40px) saturate(2);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)),
+    rgba(17,17,21,0.55);
+  border: 0.5px solid rgba(255,255,255,0.12);
+  box-shadow:
+    inset 0 0.5px 0 rgba(255,255,255,0.16),
+    inset 0 -0.5px 0 rgba(0,0,0,0.3),
+    0 8px 30px rgba(0,0,0,0.4),
+    0 2px 6px rgba(0,0,0,0.3);
+  position: relative;
+}
+.bn-tabbar::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(70% 100% at 50% 0%, rgba(255,255,255,0.10), transparent 70%);
+  pointer-events: none;
+}
+
+/* Subtle frosted chip for small surfaces */
+.bn-frost {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)),
+    rgba(30,30,36,0.5);
+  backdrop-filter: blur(14px) saturate(1.6);
+  -webkit-backdrop-filter: blur(14px) saturate(1.6);
+  border: 0.5px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.10);
+}
+
+/* Buttons */
+.bn-btn {
+  font-family: var(--bn-sans); font-size: 13px; font-weight: 590;
+  padding: 8px 14px; border-radius: 10px;
+  border: 0.5px solid var(--bn-border-strong);
+  background: var(--bn-surface-2); color: var(--bn-fg);
+  cursor: pointer; transition: background .12s, transform .08s;
+}
+.bn-btn:hover { background: #25252C; }
+.bn-btn:active { transform: scale(0.98); }
+.bn-btn.primary {
+  background: var(--bn-fg); color: #0B0B0D; border-color: transparent;
+}
+
+/* Segmented control */
+.bn-seg {
+  display: inline-flex; padding: 2px;
+  background: rgba(255,255,255,0.05); border-radius: 9px;
+  border: 0.5px solid var(--bn-border);
+}
+.bn-seg > button {
+  border: none; background: transparent; color: var(--bn-fg-dim);
+  font-family: var(--bn-sans); font-size: 12px; font-weight: 590;
+  padding: 5px 11px; border-radius: 7px; cursor: pointer;
+  transition: all .15s;
+  font-variant-numeric: tabular-nums;
+}
+.bn-seg > button.on {
+  background: rgba(255,255,255,0.1); color: var(--bn-fg);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Progress bar */
+.bn-bar {
+  height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px;
+  position: relative; overflow: hidden;
+}
+.bn-bar > span {
+  position: absolute; inset: 0; border-radius: 2px;
+  background: var(--bn-accent);
+}
+
+/* Sparkline/line chart grid dots */
+.bn-gridline { stroke: rgba(255,255,255,0.05); stroke-width: 0.5; }
+
+/* Section label */
+.bn-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--bn-fg-mute);
+}
+
+/* Page header big */
+.bn-h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.bn-h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.bn-h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+
+/* Ticker-style large number */
+.bn-big-num {
+  font-family: var(--bn-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}

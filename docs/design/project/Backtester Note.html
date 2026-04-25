@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>Backtester Note</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="lib/bn-tokens.css"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #d9d5cc; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif; }
+  #root { min-height: 100vh; }
+  .phone-wrap {
+    /* iPhone 15 pro working area ~ 393x852 */
+    width: 393px; height: 852px;
+    background: #0B0B0D; border-radius: 50px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 0 10px #1a1a1e, 0 0 0 11px #000, 0 40px 80px rgba(0,0,0,0.35);
+  }
+  .phone-wrap::before {
+    /* Dynamic island */
+    content: ''; position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 34px; background: #000; border-radius: 20px; z-index: 30;
+  }
+  .phone-content {
+    position: absolute; inset: 0; overflow: hidden;
+  }
+  .phone-statusbar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 54px; z-index: 25;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 28px 0; box-sizing: border-box;
+    color: #fff; font-size: 15px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    pointer-events: none;
+  }
+  .phone-screen {
+    position: absolute; top: 54px; left: 0; right: 0; bottom: 0;
+  }
+  .home-indicator {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    width: 134px; height: 5px; background: #fff; border-radius: 3px; z-index: 40;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="lib/design-canvas.jsx"></script>
+<script type="text/babel" src="lib/bn-data.jsx"></script>
+<script type="text/babel" src="lib/bn-holdings.jsx"></script>
+<script type="text/babel" src="lib/bn-backtest.jsx"></script>
+<script type="text/babel" src="lib/bn-shell.jsx"></script>
+
+<script type="text/babel" data-presets="react">
+const { HoldingsScreen, BacktestScreen, TabBar, SettingsSheet, TodayScreen, WidgetsScreen } = window;
+
+// Tweakable defaults — merged by host when user toggles Tweaks
+const TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "invertPnlColor": false,
+  "chartFill": "soft",
+  "density": "comfortable",
+  "accentHue": 65
+}/*EDITMODE-END*/;
+
+function Phone({ tab: initTab = 'holdings', compact = true, tweaks }) {
+  const [tab, setTab] = React.useState(initTab);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const invert = tweaks.invertPnlColor;
+  const fillMode = tweaks.chartFill;
+
+  return (
+    <div className="phone-wrap" data-screen-label={`iPhone · ${tab}`}>
+      {/* Status bar */}
+      <div className="phone-statusbar">
+        <span>9:41</span>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="0.6" fill="#fff"/><rect x="4" y="4" width="3" height="7" rx="0.6" fill="#fff"/><rect x="8" y="2" width="3" height="9" rx="0.6" fill="#fff"/><rect x="12" y="0" width="3" height="11" rx="0.6" fill="#fff"/></svg>
+          <svg width="15" height="11" viewBox="0 0 15 11"><path d="M7.5 3C9.5 3 11.3 3.8 12.6 5L13.6 4C12 2.3 9.9 1.3 7.5 1.3C5.1 1.3 3 2.3 1.4 4L2.4 5C3.7 3.8 5.5 3 7.5 3Z" fill="#fff"/><path d="M7.5 6C8.7 6 9.8 6.4 10.6 7.2L11.5 6.3C10.4 5.2 9 4.5 7.5 4.5C6 4.5 4.6 5.2 3.5 6.3L4.4 7.2C5.2 6.4 6.3 6 7.5 6Z" fill="#fff"/><circle cx="7.5" cy="9" r="1.3" fill="#fff"/></svg>
+          <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="#fff" strokeOpacity="0.4" fill="none"/><rect x="2" y="2" width="18" height="8" rx="1.5" fill="#fff"/><path d="M22.5 4V8C23.2 7.7 23.8 6.9 23.8 6C23.8 5.1 23.2 4.3 22.5 4Z" fill="#fff" fillOpacity="0.5"/></svg>
+        </span>
+      </div>
+
+      <div className="phone-content">
+        <div className="phone-screen">
+          {tab === 'today'    && <TodayScreen invert={invert}/>}
+          {tab === 'holdings' && <HoldingsScreen onSettings={() => setSettingsOpen(true)} invert={invert} fillMode={fillMode}/>}
+          {tab === 'backtest' && <BacktestScreen invert={invert} fillMode={fillMode}/>}
+          {tab === 'widgets'  && <WidgetsScreen/>}
+        </div>
+        <TabBar value={tab} onChange={setTab}/>
+        <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)}/>
+      </div>
+
+      <div className="home-indicator"/>
+    </div>
+  );
+}
+
+// ── Tweaks panel ─────────────────────────────────────────────
+function TweaksPanel({ tweaks, setTweaks, visible }) {
+  if (!visible) return null;
+  const set = (patch) => {
+    const next = { ...tweaks, ...patch };
+    setTweaks(next);
+    window.parent?.postMessage({ type: '__edit_mode_set_keys', edits: patch }, '*');
+  };
+  return (
+    <div style={{
+      position: 'fixed', right: 20, bottom: 20, zIndex: 1000,
+      width: 280, padding: 16, borderRadius: 16,
+      background: 'rgba(20,20,24,0.94)', backdropFilter: 'blur(20px)',
+      border: '0.5px solid rgba(255,255,255,0.1)', color: '#F2F2F5',
+      fontFamily: '-apple-system, BlinkMacSystemFont, system-ui, sans-serif',
+      boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
+    }}>
+      <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Tweaks</div>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 6 }}>涨跌色</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[['false', '红涨绿跌'], ['true', '绿涨红跌']].map(([v, l]) => (
+            <button key={v} onClick={() => set({ invertPnlColor: v === 'true' })} style={{
+              flex: 1, padding: '6px 0', fontSize: 11,
+              background: String(tweaks.invertPnlColor) === v ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.04)',
+              border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#F2F2F5', cursor: 'pointer',
+            }}>{l}</button>
+          ))}
+        </div>
+      </div>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 6 }}>图表填充</div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {[['soft', '柔和渐变'], ['none', '仅线条']].map(([v, l]) => (
+            <button key={v} onClick={() => set({ chartFill: v })} style={{
+              flex: 1, padding: '6px 0', fontSize: 11,
+              background: tweaks.chartFill === v ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.04)',
+              border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#F2F2F5', cursor: 'pointer',
+            }}>{l}</button>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: 11, opacity: 0.6, marginBottom: 6 }}>强调色 hue <span style={{ opacity: 0.7 }}>· {tweaks.accentHue}°</span></div>
+        <input type="range" min={0} max={360} value={tweaks.accentHue}
+          onChange={e => {
+            const h = +e.target.value;
+            set({ accentHue: h });
+            document.documentElement.style.setProperty('--bn-accent', `oklch(0.76 0.12 ${h})`);
+            document.documentElement.style.setProperty('--bn-accent-dim', `oklch(0.76 0.12 ${h} / 0.18)`);
+          }}
+          style={{ width: '100%' }}/>
+      </div>
+    </div>
+  );
+}
+
+// ── Root (design canvas with artboards) ─────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAKS_DEFAULTS);
+  const [editMode, setEditMode] = React.useState(false);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const d = e.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === '__activate_edit_mode') setEditMode(true);
+      if (d.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent?.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  // Apply accent hue on mount
+  React.useEffect(() => {
+    document.documentElement.style.setProperty('--bn-accent', `oklch(0.76 0.12 ${tweaks.accentHue})`);
+    document.documentElement.style.setProperty('--bn-accent-dim', `oklch(0.76 0.12 ${tweaks.accentHue} / 0.18)`);
+  }, []);
+
+  const { DesignCanvas, DCSection, DCArtboard } = window;
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="main-flows" title="Backtester Note" subtitle="iPhone 原型 · iOS 26 深色仪表盘 · PeakWatch 风">
+          <DCArtboard id="holdings" label="持仓 (第一部分 · 主页)" width={393} height={852}>
+            <Phone tab="holdings" tweaks={tweaks}/>
+          </DCArtboard>
+          <DCArtboard id="holdings-settings" label="持仓 + 设置面板" width={393} height={852}>
+            <PhoneWithSettings tweaks={tweaks}/>
+          </DCArtboard>
+          <DCArtboard id="backtest-portfolio" label="回测 · 组合 (第三部分)" width={393} height={852}>
+            <Phone tab="backtest" tweaks={tweaks}/>
+          </DCArtboard>
+          <DCArtboard id="backtest-history" label="回测 · 历史" width={393} height={852}>
+            <PhoneWithBacktestTab tab="history" tweaks={tweaks}/>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="shell" title="Tab 壳 · 今日 & 组件" subtitle="配套的信息入口与 widget 同步层">
+          <DCArtboard id="today" label="今日" width={393} height={852}>
+            <Phone tab="today" tweaks={tweaks}/>
+          </DCArtboard>
+          <DCArtboard id="widgets" label="组件" width={393} height={852}>
+            <Phone tab="widgets" tweaks={tweaks}/>
+          </DCArtboard>
+          <DCArtboard id="backtest-single" label="回测 · 单基金" width={393} height={852}>
+            <PhoneWithBacktestTab tab="single" tweaks={tweaks}/>
+          </DCArtboard>
+          <DCArtboard id="backtest-sip" label="回测 · 定投" width={393} height={852}>
+            <PhoneWithBacktestTab tab="sip" tweaks={tweaks}/>
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel tweaks={tweaks} setTweaks={setTweaks} visible={editMode}/>
+    </>
+  );
+}
+
+// Helper to show settings panel opened
+function PhoneWithSettings({ tweaks }) {
+  const invert = tweaks.invertPnlColor;
+  const fillMode = tweaks.chartFill;
+  return (
+    <div className="phone-wrap" data-screen-label="iPhone · holdings+settings">
+      <div className="phone-statusbar">
+        <span>9:41</span>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="0.6" fill="#fff"/><rect x="4" y="4" width="3" height="7" rx="0.6" fill="#fff"/><rect x="8" y="2" width="3" height="9" rx="0.6" fill="#fff"/><rect x="12" y="0" width="3" height="11" rx="0.6" fill="#fff"/></svg>
+          <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="#fff" strokeOpacity="0.4" fill="none"/><rect x="2" y="2" width="18" height="8" rx="1.5" fill="#fff"/></svg>
+        </span>
+      </div>
+      <div className="phone-content">
+        <div className="phone-screen">
+          <HoldingsScreen onSettings={() => {}} invert={invert} fillMode={fillMode}/>
+        </div>
+        <TabBar value="holdings" onChange={() => {}}/>
+        <SettingsSheet open={true} onClose={() => {}}/>
+      </div>
+      <div className="home-indicator"/>
+    </div>
+  );
+}
+
+function PhoneWithBacktestTab({ tab, tweaks }) {
+  // Inject an initial backtest mode override via a wrapper
+  const [force] = React.useState(tab);
+  const invert = tweaks.invertPnlColor;
+  return (
+    <div className="phone-wrap" data-screen-label={`iPhone · backtest-${tab}`}>
+      <div className="phone-statusbar">
+        <span>9:41</span>
+        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="6" width="3" height="5" rx="0.6" fill="#fff"/><rect x="4" y="4" width="3" height="7" rx="0.6" fill="#fff"/><rect x="8" y="2" width="3" height="9" rx="0.6" fill="#fff"/><rect x="12" y="0" width="3" height="11" rx="0.6" fill="#fff"/></svg>
+          <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="#fff" strokeOpacity="0.4" fill="none"/><rect x="2" y="2" width="18" height="8" rx="1.5" fill="#fff"/></svg>
+        </span>
+      </div>
+      <div className="phone-content">
+        <div className="phone-screen">
+          <BacktestInitial initMode={force} invert={invert} fillMode={tweaks.chartFill}/>
+        </div>
+        <TabBar value="backtest" onChange={() => {}}/>
+      </div>
+      <div className="home-indicator"/>
+    </div>
+  );
+}
+
+// Variant of BacktestScreen with initial mode prop
+function BacktestInitial({ initMode, invert, fillMode }) {
+  // Monkey-patch: recreate BacktestScreen's content but with forced mode.
+  // We reuse the exported components if exposed; otherwise fall back.
+  const { BacktestScreen } = window;
+  // Hack: wrap and pre-set localStorage? Simpler: re-implement mount using a key override.
+  // Cleaner: add a key prop so React remounts.
+  return <BacktestWithMode key={initMode} initMode={initMode} invert={invert} fillMode={fillMode}/>;
+}
+
+// Re-declare to allow controlled initial mode
+function BacktestWithMode({ initMode = 'portfolio', invert, fillMode }) {
+  const { Icon } = window;
+  const [mode, setMode] = React.useState(initMode);
+  const { BacktestTabBar, ConfigCard, ResultPreview, HistoryList } = window;
+  return (
+    <div className="bn-root" style={{ width: '100%', height: '100%', background: 'var(--bn-bg)', overflow: 'auto' }}>
+      <div style={{ padding: '14px 20px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div className="bn-label">Backtest</div>
+          <div className="bn-h1" style={{ fontSize: 26, marginTop: 2 }}>回测</div>
+        </div>
+        <button className="bn-btn" style={{ padding: '6px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Icon.Plus size={12}/> 新建
+        </button>
+      </div>
+      <BacktestTabBar value={mode} onChange={setMode}/>
+      {mode === 'history'
+        ? <HistoryList invert={invert}/>
+        : <>
+            <ConfigCard mode={mode} invert={invert}/>
+            <ResultPreview invert={invert} fillMode={fillMode}/>
+            <div style={{ height: 100 }}/>
+          </>
+      }
+    </div>
+  );
+}
+
+// Root mount
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+// Wait for babel scripts to finish registering exports
+function waitForReady(cb, tries = 0) {
+  if (window.HoldingsScreen && window.BacktestScreen && window.TabBar && window.DesignCanvas) {
+    cb();
+  } else if (tries < 60) {
+    setTimeout(() => waitForReady(cb, tries + 1), 50);
+  }
+}
+
+// Export needed inner components to window for BacktestWithMode
+setTimeout(() => {
+  // Attempt to expose internals by re-reading BacktestScreen file exports
+  // The child components (ConfigCard, ResultPreview, HistoryList, BacktestTabBar) are module-local;
+  // they were not exported. We'll patch: expose them from bn-backtest.jsx by asking it to.
+}, 10);
+
+waitForReady(() => {
+  root.render(<App/>);
+});
+</script>
+</body>
+</html>
