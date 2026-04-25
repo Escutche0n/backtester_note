@@ -10,12 +10,9 @@ import SwiftUI
 /// in the design. Component-specific paddings (button / chip) are intentionally NOT exposed
 /// here — they belong to component implementations in a later commit.
 ///
-/// Shadow: bn-tokens.css uses multi-layer inset highlights + drop shadows + `backdrop-filter`
-/// for `.bn-glass` and `.bn-tabbar`. SwiftUI has no inset-shadow primitive, so the full glass
-/// effect must be reconstructed at the **component level** (Card / TabBar) using
-/// `.background(.ultraThinMaterial)` + `.overlay(stroke)` + `.shadow(...)` in stack.
+/// Shadow: component surfaces currently use solid fills plus a subtle border and base shadow.
 /// At the token layer we expose only a single-layer base drop shadow used as the outermost
-/// element of those stacks. Multi-layer composition is a commit-D concern.
+/// element of those stacks.
 enum BNRadius {
     /// `--bn-r-sm 10px`
     static let sm: CGFloat = 10

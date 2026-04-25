@@ -13,18 +13,7 @@ struct BNGlassCard<Content: View>: View {
         content
             .background {
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(.regularMaterial)
-                    .overlay {
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.07),
-                                Color.white.opacity(0.02),
-                                Color.black.opacity(0.10)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    }
+                    .fill(BNTokens.Colors.surfaceElevated)
             }
             .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
             .overlay {

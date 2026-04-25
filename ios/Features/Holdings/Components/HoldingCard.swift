@@ -21,14 +21,7 @@ struct HoldingCard: View {
         .padding(14)
         .background {
             RoundedRectangle(cornerRadius: BNTokens.Radius.md, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.06), Color.white.opacity(0.015)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                }
+                .fill(BNTokens.Colors.surface)
         }
         .clipShape(RoundedRectangle(cornerRadius: BNTokens.Radius.md, style: .continuous))
         .overlay {

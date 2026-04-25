@@ -25,13 +25,7 @@ struct MockLineChart: View {
 
                 if showFill {
                     fillPath(linePath: linePath, points: series, bounds: bounds, size: size)
-                        .fill(
-                            LinearGradient(
-                                colors: [color.opacity(0.22), color.opacity(0)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
+                        .fill(color.opacity(0.12))
                 }
 
                 linePath
