@@ -19,7 +19,7 @@
 
 - `schema` —— 固定 `backtester-note/import/v1`。未来改字段含义或删字段必须升 v2。
 - `exported_at` —— ISO 8601 带时区。
-- `source` —— 枚举。`legacy_fundmvp_export` 用于旧 app 导出的兼容读取（详见 §5）。
+- `source` —— 枚举。`legacy_fundmvp_export` 表示文件由旧 FundMVP 按本 schema 导出；不是旧 app 私有格式兼容模式。
 - `accounts` —— 至少 1 个。
 
 ---
@@ -134,15 +134,13 @@ App 设置里提供可导出的快捷指令模板：
 
 ## 与旧 app 的兼容
 
-`source: legacy_fundmvp_export` 模式下，App 必须能读 `/Users/elvischen/Developer/investment app/` 导出的 JSON 格式并**映射到本 schema**。GPT 起草时：
-1. 读旧 app `FundMVP/Persistence/` 相关 store 的导出实现
-2. 在 `docs/contracts/legacy_fundmvp_mapping.md` 写字段对齐表
-3. 映射失败的字段丢弃但记入导入日志
+`source: legacy_fundmvp_export` 模式下，文件仍必须已经是 `backtester-note/import/v1` schema。新 app 不读取旧 FundMVP 私有 persistence 格式，也不做字段猜测映射。
 
-旧 app 本身**不改**，除非映射太痛以致需要在旧 app 加一个"按新 schema 导出"按钮——届时在 worklog 写 `## Questions for Elvis` 申请。
+Elvis 2026-04-25 裁定：迁移方向反过来做，旧 app 增加"导出为 Backtester Note JSON v1"能力；新 app 只维护一个干净导入器。
 
 ---
 
 ## Changelog
 
 - `v1` — 初版。快照 + 继承流水，支持 baseline 前移。
+- `v1.1` — 明确 `legacy_fundmvp_export` 不是旧私有格式兼容模式；旧 app 必须导出本 schema。

@@ -1,22 +1,30 @@
-# Legacy FundMVP → json_import.v1 字段映射（STUB）
+# Legacy FundMVP → json_import.v1 迁移策略（DEPRECATED MAPPING）
 
-> ⚠️ **本文件是 stub**。
+> ⚠️ **本文件不再要求新 app 兼容旧 app 的内部导出格式**。
 >
-> 旧 app `/Users/elvischen/Developer/investment app/FundMVP/` 的 Persistence 导出格式与 [json_import.v1](json_import.v1.md) 的字段对齐表，待 GPT 反推旧 Persistence 实现后补完。
+> Elvis 2026-04-25 裁定：不做“新 app 读取旧 app 私有格式再映射”的迁移方案。正确方案是反向改旧 app，使旧 app 直接导出 [json_import.v1](json_import.v1.md) 干净格式；新 app 只实现 `json_import.v1` 导入器。
 >
-> 实现锚点：`ios/Services/ImportService.swift`（`source: legacy_fundmvp_export` 分支）
+> 实现锚点：
+> - 新 app：`ios/Services/ImportService.swift` 只读取 `backtester-note/import/v1`
+> - 旧 app：新增“导出为 Backtester Note JSON v1”能力（旧 app 仓库内实现）
 
 ---
 
 ## 1. 目标
 
-新 app 必须能读旧 app 导出的 JSON 并**自动 source-detect** 后映射到 `backtester-note/import/v1`。映射失败的字段**丢弃但记入导入日志**（不阻塞）。
+新 app 的目标是只支持一个干净入口：
+
+- `schema == "backtester-note/import/v1"`
+- 结构完全遵守 [json_import.v1.md](json_import.v1.md)
+- 导入前预览 + 用户确认 + 再落库
+
+旧 app 如需迁移数据，必须先导出成该 schema。新 app 不承担旧私有 persistence 格式的自动探测、字段猜测和容错映射。
 
 ---
 
-## 2. 待 GPT 反推的源
+## 2. 旧 app 需要改的导出源
 
-旧 app 涉及导出的位置（已知）：
+旧 app 涉及数据来源（已知）：
 
 - `FundMVP/Persistence/HoldingFileStore.swift` — 持仓快照文件 store
 - `FundMVP/Persistence/CoreDataPortfolioStore.swift` — Portfolio Core Data
@@ -24,63 +32,48 @@
 - `FundMVP/Persistence/BacktestHistoryFileStore.swift` — 回测历史
 - `FundMVP/Persistence/PersistenceController.swift:269-413` — 总入口
 
-**GPT 任务**：
-1. 通读上面 5 个 store
-2. 找出实际写入磁盘的 JSON 结构
-3. 在本文 §3 写完整字段对齐表
-4. 在本文 §4 写"无法映射的字段"清单（决定丢弃 vs 升级 schema）
+**旧 app 修改目标**：
+1. 从上面 store 读取现有账户数据。
+2. 在旧 app 内部转换为 `json_import.v1`。
+3. 导出文件顶层必须是 `schema: "backtester-note/import/v1"`。
+4. 新 app 只按 `json_import.v1` 验证和导入。
 
 ---
 
-## 3. 字段对齐表（v1.1 GPT 补完）
+## 3. Baseline 生成规则
 
-### 3.1 持仓 / 流水
+旧 app 如没有 baseline 概念，导出时在旧 app 侧生成 baseline：
 
-| 旧 app 字段 | 新 schema 字段 | 转换 |
-|---|---|---|
-| `HoldingTransaction.date` | `Flow.date` | TBD |
-| `HoldingTransaction.type` | `Flow.type` | 旧 enum 待 GPT 列出 |
-| `HoldingTransaction.amount` | `Flow.amount` | TBD |
-| `HoldingPositionSnapshot.date` | `Snapshot.date` | TBD |
-| ... | ... | TBD |
+- 有 snapshot：最早 snapshot 标 `is_baseline: true`。
+- 没有 snapshot 只有 flows：第一笔 flow 前一天生成空 baseline（`holdings: []`）。
+- 新 app 不做该推导；如果导入文件没有恰好一个 baseline，新 app 直接按 `json_import.v1` Fatal 拒绝。
 
-### 3.2 baseline 推导
+## 4. 不迁移内容
 
-新 schema 要求恰一个 `is_baseline=true`。旧 app **没有** baseline 概念。
+旧 app 导出 `json_import.v1` 时默认不迁移：
 
-**v1 决议**：导入旧数据时，**取最早的 snapshot 自动标 `is_baseline: true`**。如旧账户没有 snapshot 只有 flows，**第一笔 flow 之前一天造一个空 baseline**（holdings=[]）—— 这会让 NAV 段从首笔流水起算，与旧 app 行为一致。
-
-GPT v1.1 验证此规则在所有旧账户上不破口径。
-
-### 3.3 回测历史
-
-旧 app 的 `BacktestHistoryFileStore` 与新 app 的 `ios/Persistence/BacktestHistoryStore.swift` 都是文件型，**不通过 json_import 走**。Phase 2 处理。
-
----
-
-## 4. 无法映射的字段
-
-待 GPT 反推后填。预期会有：
-
-- 旧 app 的 widget config（不导入，新 app 重置）
-- 旧 app 的 cache fingerprint（不导入，按数据重算）
-- 旧 app 的 UI 偏好（不导入）
+- widget config（新 app 重设）
+- cache fingerprint（新 app 按数据重算）
+- UI 偏好（新 app 重设）
+- 回测历史（Phase 2 另定是否迁移，不走 holdings import）
 
 ---
 
 ## 5. 测试
 
-`AlgorithmsTests/ImportTests/LegacyFundMVPTests/`：
+`ImportTests/JSONImportTests/`：
 
-1. Elvis 在 [phase0 worklog Next](../worklog/2026-04-25_ios_phase0-baseline.md) 任意时机导出 1 个真实账户（旧 app 格式）→ `tests/fixtures/legacy/<account>/legacy_export.json`
-2. ImportService 读 → 转 → 验证：
-   - baseline 推导正确
-   - 流水条数一致
-   - 跑 NAV 算法 → 与旧 app 截图数字一致
-3. 这一步同时**充当 real golden fixture 的入口**（一鸡两吃）
+1. 旧 app 导出 `json_import.v1` 文件。
+2. 新 app ImportService 只验证 `json_import.v1`：
+   - schema 匹配
+   - baseline 恰好一个
+   - flows / snapshots 日期和数值规则合法
+   - 预览结果正确
+3. 导入后的真实账户文件可作为 real golden fixture 输入。
 
 ---
 
 ## 6. Changelog
 
-- v1 stub (2026-04-25) — 仅声明任务。字段对齐待 GPT 反推旧 Persistence 后补完 v1.1。
+- v1 stub (2026-04-25) — 原计划让新 app 读取旧 app 私有格式并映射。
+- v1.1 (2026-04-25) — Elvis 裁定废弃 legacy mapping：旧 app 改为直接导出 `json_import.v1`，新 app 不兼容旧私有格式。

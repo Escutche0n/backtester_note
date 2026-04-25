@@ -204,7 +204,7 @@
 - `schema` 字段是版本号，永不删字段，只加（Additive-only）
 - 恰有一个 snapshot 的 `is_baseline: true`（最早那个）
 - 导入前必须预览 + 对账，用户点"确认"才落地
-- 导入器必须能读旧 app 的导出格式（GPT 起草时反推）
+- 导入器只读 `backtester-note/import/v1`。旧 app 如需迁移，必须反向新增"导出为 Backtester Note JSON v1"能力；新 app 不兼容旧 app 私有 persistence 格式。
 
 ---
 
@@ -259,7 +259,7 @@
 - **Port + 重写 wrapper**：TWRR NAV 的 API 表面、Widget refresh 职责拆分
 - **Rewrite**：`HoldingsHomeFeature.swift` 3797 行 god file、组合再平衡阈值散落、雷达权重硬编码
 
-旧 `prd/` 的 75 份 session log 不迁移，不索引。旧 app 本身不改，除非需要加"按新 schema 导出"的便利功能（见 salvage matrix）。
+旧 `prd/` 的 75 份 session log 不迁移，不索引。旧 app 如需迁移真实账户，应新增"按新 schema 导出"能力；新 app 不读取旧 app 私有格式。此决议由 Elvis 于 2026-04-25 裁定，目的是保持新 app 导入器干净、单一、可测试。
 
 ---
 

@@ -463,13 +463,13 @@ enum BNColor {
 | `ios/Config/StrategyIntent.swift` | `docs/algorithms/strategy_intent.v1.md` | ✅ 有 |
 | `ios/Networking/Endpoints.swift` | `docs/contracts/api.v1.md` | ✅ v1.1（按后端 commit `926c912` 反推；`portfolio/history` 仍为 mock，不可生产使用）|
 | `ios/Services/ImportService.swift` | `docs/contracts/json_import.v1.md` | ✅ 有 |
-| `ios/Services/ImportService.swift`（旧 app 兼容）| `docs/contracts/legacy_fundmvp_mapping.md` | ⚠️ stub（GPT 待补字段对齐，依赖反推旧 Persistence 导出格式）|
+| `ios/Services/ImportService.swift`（旧 app 迁移）| `docs/contracts/legacy_fundmvp_mapping.md` | ✅ 迁移策略已定：旧 app 导出 `json_import.v1`，新 app 不做旧私有格式映射 |
 | `ios/DesignSystem/` | `docs/design/project/lib/bn-tokens.css` | ✅ 有 |
 | `ios/` 整体迁移决策 | `docs/algorithms/salvage_matrix.md` | ✅ 有 |
 
 **Phase 1a 解锁条件**：4 份算法文档（nav/radar/backtest/strategy_intent）✅ + Elvis 已裁定 XIRR / Radar 两处 Algorithm drift。
 **Phase 3 解锁条件**：`api.v1.md` 完整 schema（GPT 完成）。
-**Phase 1c 解锁条件**：`legacy_fundmvp_mapping.md` 完整字段表（GPT 完成）。
+**Phase 1c 解锁条件**：新 app 实现 `json_import.v1` 导入；旧 app 如需迁移，另行实现导出 `json_import.v1`。
 
 ---
 
@@ -481,7 +481,7 @@ PRD §9 的 Phase 1 在工程上拆为三个可独立 ship 的子阶段，避免
 |---|---|---|---|
 | **Phase 1a · 算法地基** | Algorithms 层裸跑、CI 全绿 | `ios/Algorithms/*` 全部 + synthetic golden fixture CI | 一个 SwiftPM package 单跑可过；XIRR/TWRR/Radar/Metrics/Backtest 单测覆盖；fixture diff < 0.01% |
 | **Phase 1b · UI 骨架** | 持仓 Tab 用 mock 数据可看 | Xcode 工程 + DesignSystem + Holdings Feature + Settings 壳 | 设计 1:1（[bn-holdings.jsx](../design/project/lib/bn-holdings.jsx)）；mock 数据驱动；订阅卡片占位 |
-| **Phase 1c · 接通真数据** | Holdings 跑真账户 | Persistence + ImportService（json_import.v1）+ Holdings Mock → Real 切换 | JSON 导入 + 预览 + 落库；快照前移 UI 含确认 sheet；CoreData 迁移 |
+| **Phase 1c · 接通真数据** | Holdings 跑真账户 | Persistence + ImportService（json_import.v1）+ Holdings Mock → Real 切换 | JSON 导入 + 预览 + 落库；快照前移 UI 含确认 sheet；旧 app 迁移文件必须已是 json_import.v1 |
 
 | PRD §9 阶段 | 本架构需要落地的东西 |
 |---|---|
