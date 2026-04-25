@@ -30,12 +30,6 @@ struct HoldingFund: Identifiable, Sendable {
     let sparkline: [ChartPoint]
 }
 
-struct ChartPoint: Identifiable, Sendable {
-    let id = UUID()
-    let index: Int
-    let value: Double
-}
-
 struct NavRangeSeries: Sendable {
     let account: [ChartPoint]
     let benchmark: [ChartPoint]

@@ -8,12 +8,7 @@ struct RootTabView: View {
                     Label("持仓", systemImage: "chart.pie")
                 }
 
-            ZStack {
-                BNAmbientBackground()
-                Text("回测占位")
-                    .font(BNTokens.Typography.h1)
-                    .foregroundStyle(BNTokens.Colors.foregroundPrimary)
-            }
+            BacktestView()
                 .tabItem {
                     Label("回测", systemImage: "chart.line.uptrend.xyaxis")
                 }
