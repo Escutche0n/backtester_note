@@ -129,10 +129,26 @@ $ swift test
 
 ## Review
 
-- ⏳ 等 GPT review，重点：
-  - CSS → Swift 映射表里每行数值是否一一对应（特别是 `up/down` 涨绿跌红方向是否反了 —— 已严格按 CSS 注释 "CN market (red up, green down)"）。
-  - `BNSpacing` 五档（4/8/12/16/24）是 CSS 没声明的归纳，是否合理。
-  - 把 `.bn-glass` 多层叠加推迟到组件级（commit D）是否符合 GPT 的预期。
+✅ 通过（GPT Review，2026-04-25）。
+
+审查范围：
+- 已按 Elvis 指令先读 `AGENTS.md`，再读本 worklog 与 commit `3a38419` 改动文件。
+- 对照实际设计源 `docs/design/project/lib/bn-tokens.css` 复核 `BNColors` / `BNTypography` / `BNSpacing` / `BNTokens` / `BNTokensPreview` / `RootTabView` / `project.yml`。
+- 额外核对 `docs/prd/Backtester_Note_PRD_v2.md` §7.1 的设计 token 映射要求。
+
+结论：
+- CSS → Swift 数值映射通过：surface / border / foreground / up-down / accent / benchmark / radius / typography 主值与 `bn-tokens.css` 一致；`up = red`、`down = green` 与 CN market 注释一致，未反。
+- `BNSpacing` 的 4 / 8 / 12 / 16 / 24 属于 CSS 未声明 spacing scale 下的实现归纳；worklog 已明示来源与边界，且未把 button/chip 组件 padding 提前做成 token，符合本 commit "token only" 范围。
+- `.bn-glass` / `.bn-tabbar` / `.bn-frost` 多层视觉推迟到组件级是合理的：当前只落 base shadow，不提前写 component modifier，未越过 commit D 的组件实现边界。
+- 未触动 `docs/prd/`、`docs/design/`、`docs/contracts/`、权限声明、算法口径或 Widgets target；无 contract change、无 algorithm drift。
+- 单代码文件均低于 450 行：本次相关 Swift 文件最大 `BNTokensPreview.swift` 128 行。
+
+验证：
+- `swift test`：通过，10 tests / 4 suites。
+- `xcodebuild -project BacktesterNote.xcodeproj -scheme BacktesterNote -destination 'platform=iOS Simulator,name=iPhone 17' -configuration Debug build CODE_SIGNING_ALLOWED=NO`：通过，`** BUILD SUCCEEDED **`。
+
+非阻塞备注：
+- 当前仓库实际设计路径是 `docs/design/project/lib/bn-tokens.css`；部分文档仍写 `docs/design/backtester-note/...`。本 commit 使用了实际存在的设计源，未造成实现偏差。
 
 ## Questions for Elvis
 
