@@ -13,14 +13,14 @@ enum BNColors {
 
     // MARK: Surfaces — warm near-black
 
-    /// Elvis visual override: solid page background `#1E1E20`.
-    static let background = Color(red: 0x1E / 255, green: 0x1E / 255, blue: 0x20 / 255)
-    /// Elevated background, kept close to the solid page base.
-    static let backgroundElevated = Color(red: 0x1E / 255, green: 0x1E / 255, blue: 0x20 / 255)
-    /// `--bn-surface #17171C`
-    static let surface = Color(red: 0x17 / 255, green: 0x17 / 255, blue: 0x1C / 255)
-    /// `--bn-surface-2 #1E1E24`
-    static let surfaceElevated = Color(red: 0x1E / 255, green: 0x1E / 255, blue: 0x24 / 255)
+    /// Elvis visual override: solid page background `#000000`.
+    static let background = Color.black
+    /// Elevated full-page background, same pure black as the root background.
+    static let backgroundElevated = Color.black
+    /// Elvis-confirmed card background: `rgb(28, 28, 30)` / `#1C1C1E`.
+    static let surface = Color(red: 28 / 255, green: 28 / 255, blue: 30 / 255)
+    /// Same solid card color; elevation is handled by borders and spacing, not a new fill.
+    static let surfaceElevated = surface
 
     /// `--bn-border rgba(255,255,255,0.06)`
     static let border = Color.white.opacity(0.06)
