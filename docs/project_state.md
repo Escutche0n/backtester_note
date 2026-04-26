@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-26
-- 上次更新者：Claude / Opus（log 对照线 + 流水入口决议）
+- 上次更新者：Claude / Opus（log 对照线 × 雷达 = 北极星定位）
 
 ---
 
@@ -45,6 +45,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-26 · **产品北极星（new）**：「对照线 × 雷达」是 app 的核心差异化亮点 —— 雷达六维量化**行为质量**（执行程度 / 投资纪律 / …），对照线量化**行为代价**（实线 vs 影线的 ¥ / %）。两者配合回答用户最痛的问题："我的低分到底亏了我多少钱 / 假如我守纪律会多赚多少"。**功能取舍时此组合优先级最高**，其他 nice-to-have 让路。Phase 1h 不能跳过，但当前不抢节奏，细节（命名 / 锚点 / 现金流默认 / 费率）冻到 1f 临近再解冻 · 本次 session
 - 2026-04-26 · 「对照线」（暂名，候选：对照线 / 应得净值 / 影子组合 / 假如坚持，待最终命名）确定为 `NavCard` 上的叠加图层（toggle + 锚点 picker 复用现有 1M/3M/6M/1Y），不开独立 tab。算法 = 反事实重放，复用 Phase 1f backtest 引擎；起点对齐到锚点日实线 NAV，差距完全归因于这段期间行为成本。**红线建议**：app 内禁出现「预测 / 收益预估」字样，统一限定到「过去 / 历史 / 假如」（监管口径）。Phase 排到 1f 之后（暂记 `Phase 1h: 对照线`），命名/默认锚点/现金流默认/费率四题待 Elvis 裁后写进 PRD §7.2 · 本次 session 讨论
 - 2026-04-26 · IA 仍按 PRD §2 冻结的 2 tab 走，不升 5 tab / 不升 4 tab。空旷感等 1c 写入 + 1d 真实数据 + 对照线全落完再判断。若届时仍觉得少，**优先走「流水从设置齿轮升级为独立全屏 sheet」**（持仓页 `TotalHeader` 旁加 `list.bullet` 入口），不动 PRD §2；只有 sheet 方案憋住才考虑改 PRD 升 3 tab `持仓 / 流水 / 回测` · 本次 session 讨论
 - 2026-04-26 · Claude 完成 1b-3 / 1b-4 review，✅ 通过；同 commit fixup 三处：`BacktestView` 「新建」按钮副作用 → no-op + TODO 1f；`RadarCard` 硬编码 delta → 算 snapshot；`HoldingsList` 死控件 Picker → `@State`。PRD §7.2 异常 banner / `MockRadarChart` 颜色 / mock series DRY 三项落 worklog Ideas，留下次 · 1b-3 / 1b-4 worklog `## Review`
@@ -115,7 +116,7 @@
 - **iOS（GPT / Elvis 另行指派）**：Phase 1c 下一刀 · 最小 Persistence / PortfolioService，接入“确认写入”。
 - **Backend（GPT）**：`portfolio/history` 真实化（待 GPT 自排时机）
 - **Meta**：ARCH §8 回填 ✅ 完成（v1.3）。雷达 v1.1 ✅ 完成。下一个 Meta 任务待 Opus 1b 全部落完时校对 ARCH §3 目录骨架"最终态" vs "已落地"差异。
-- **Phase 1h（新增・暂排）对照线**：1f Backtest 引擎落地后启动。算法 = 反事实重放，UI = `NavCard` 叠加图层。前置依赖 Elvis 裁四题（命名 / 默认锚点 / 现金流默认 / 费率，见 §4）+ PRD §7.2 增补小节。
+- **Phase 1h（新增・暂排）对照线**：1f Backtest 引擎落地后启动。算法 = 反事实重放，UI = `NavCard` 叠加图层。**当前不开工、不催 Elvis 裁 §4 四题** —— 节奏优先于细枝末节；等 1f 进入 in-flight 状态再解冻这四题与 PRD §7.2 增补。Elvis 已确认对照线 × 雷达是北极星，到时不会被其他功能挤掉。
 - **IA 复评观察点**：1c 写入 + 1d 真实数据 + 1h 对照线全落完后，复评持仓 tab 是否仍空旷。若是，先升级流水为独立 sheet（不改 PRD）；仍憋住才考虑 PRD §2 升 3 tab。
 
 ---
