@@ -73,10 +73,12 @@ struct RadarCard: View {
                     .bnNumeric(28, weight: .semibold)
                     .foregroundStyle(BNTokens.Colors.foregroundPrimary)
 
-                if selectedKey == "current" {
-                    Text("↑ 2.2 vs 上周")
+                if selectedKey == "current",
+                   let lastWeek = HoldingsMockData.radarSnapshots.first(where: { $0.key == "lastWeek" }) {
+                    let delta = selectedSnapshot.score - lastWeek.score
+                    Text("\(delta >= 0 ? "↑" : "↓") \(String(format: "%.1f", abs(delta))) vs 上周")
                         .bnNumeric(10.5, weight: .semibold)
-                        .foregroundStyle(BNTokens.Colors.up)
+                        .foregroundStyle(delta >= 0 ? BNTokens.Colors.up : BNTokens.Colors.down)
                 }
             }
 

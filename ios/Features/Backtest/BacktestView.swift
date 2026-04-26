@@ -37,7 +37,7 @@ struct BacktestView: View {
             Spacer()
 
             Button {
-                mode = .portfolio
+                // TODO 1f: prefill ConfigCard from current holdings (PRD §7.3)
             } label: {
                 Label("新建", systemImage: "plus")
                     .font(BNTokens.Typography.text(size: 11))

@@ -3,6 +3,7 @@ import SwiftUI
 struct HoldingsList: View {
     let funds: [HoldingFund]
     let totalValue: Double
+    @State private var sortKey = "按市值"
 
     var body: some View {
         VStack(spacing: 10) {
@@ -13,7 +14,8 @@ struct HoldingsList: View {
 
                 Spacer()
 
-                Picker("排序", selection: .constant("按市值")) {
+                // mock: 排序逻辑留给真实数据接入（1d）
+                Picker("排序", selection: $sortKey) {
                     Text("按市值").tag("按市值")
                     Text("按收益").tag("按收益")
                     Text("按失衡").tag("按失衡")

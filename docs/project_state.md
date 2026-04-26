@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-26
-- 上次更新者：GPT（iOS pure black background + card color）
+- 上次更新者：Claude / Opus（1b-3 / 1b-4 review fixup）
 
 ---
 
@@ -22,8 +22,8 @@
 | 1a-fix | P2-1 Radar.swift sustainabilityScore 删除 calendar 参数（强制 Asia/Shanghai）+ deterministic 回归测试 | ⏳ Codex 复审第二轮 | 本次 | Claude |
 | 1b-1 | App Shell（xcodegen + 两 Tab + Widgets extension 占位） | ✅ done | `7743d4a` | Opus |
 | 1b-2 | DesignSystem / BNTokens（color / typography / spacing token 层） | ✅ done | `3a38419` | Opus |
-| 1b-3 | Holdings mock UI（用 token 画 Card / Chip / Row 第一片 + ambient gradient 落 RootView） | ✅ done | `e12c8e8` | GPT（Elvis 临时指派） |
-| 1b-4 | Settings sheet 壳 + 回测 Tab 第一屏 | ✅ done | `2059310` | GPT（Elvis 临时指派） |
+| 1b-3 | Holdings mock UI（用 token 画 Card / Chip / Row 第一片 + ambient gradient 落 RootView） | ✅ done + Claude review ✅ | `e12c8e8` + 本次 review fixup | GPT 主笔 / Claude review |
+| 1b-4 | Settings sheet 壳 + 回测 Tab 第一屏 | ✅ done + Claude review ✅ | `2059310` + 本次 review fixup | GPT 主笔 / Claude review |
 | 1b-visual | AppIcon + 纯色暗色面视觉微调（移除当前 UI gradient / Material） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1b-visual-2 | 字体与底色微调（正文 bold system / 中文 PingFang fallback，数字 SF Mono 同族，底色 `#1E1E20`） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1b-visual-3 | 背景 / 卡片颜色微调（页面纯黑，卡片 `rgb(28, 28, 30)`） | ✅ done | 本次 | GPT（Elvis 指派） |
@@ -45,6 +45,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-26 · Claude 完成 1b-3 / 1b-4 review，✅ 通过；同 commit fixup 三处：`BacktestView` 「新建」按钮副作用 → no-op + TODO 1f；`RadarCard` 硬编码 delta → 算 snapshot；`HoldingsList` 死控件 Picker → `@State`。PRD §7.2 异常 banner / `MockRadarChart` 颜色 / mock series DRY 三项落 worklog Ideas，留下次 · 1b-3 / 1b-4 worklog `## Review`
 - 2026-04-26 · Elvis 确认卡片底色为 `rgb(28,28,30)`，页面背景改纯黑；实现层将 `surface/surfaceElevated` 统一为 `#1C1C1E`，`background/backgroundElevated` 统一为 `#000000` · 2026-04-26_ios_background-card-color worklog
 - 2026-04-26 · Elvis 要求中文用 PingFang SC、英文用 SF Pro Display Bold、数字用 SF Mono 同族、纯色底色改为 `#1E1E20`；实现层用 bold system font + Chinese fallback，数字走 system monospaced，并同步 AppIcon 底色 · 2026-04-26_ios_font-background-tuning worklog
 - 2026-04-26 · Elvis 要求当前 iOS UI 从 Liquid Glass / ambient gradient 转向截图参考的纯色暗色面；实现层先移除 SwiftUI gradient / Material，并补 AppIcon。设计源 `docs/design/` 暂不动，后续如定稿再请 Claude Design 更新 · 2026-04-26_ios_solid-theme-app-icon worklog
