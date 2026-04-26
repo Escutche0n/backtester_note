@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-26
-- 上次更新者：Claude / Opus（1b-visual-4 haptics + chart gradient）
+- 上次更新者：Claude / Opus（restore App Group entitlement, Codex review fix）
 
 ---
 
@@ -46,6 +46,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-26 · 修复 1b-1 起 `BacktesterNote.entitlements` / `BacktesterNoteWidgets.entitlements` 一直是空 `<dict/>` 的回归 —— 把 §2 决议簿 2026-04-25 已冻结的 App Group `group.com.chenyuefu.backtester-note` 写回两个文件。⚠️ PERMISSION CHANGE 已在 worklog 标红；无新增权限维度。模拟器静默通过；真机 / 上架时这条若缺 widget snapshot 共享会 runtime 失败。Codex review 抓到的 · 2026-04-26_ios_restore-app-group-entitlement worklog
 - 2026-04-26 · 引入 `BNHaptics`（tap / emphasis / success 三档）；所有 Picker / Toggle 走 `.sensoryFeedback(.selection, trigger:)`，所有 Button 走 `BNHaptics.tap()`，「开始回测」CTA 走 `success()`（Phase 1f 真实回测后改为提交=tap、回调=success/error）。`MockLineChart` stroke / fill 改 vertical LinearGradient（顶亮底淡，Peak watch 风），不动 PRD §7.1 红涨绿跌色规则 · 2026-04-26_ios_phase1b-visual-4-haptics-chart-gradient worklog
 - 2026-04-26 · **产品北极星（new）**：「对照线 × 雷达」是 app 的核心差异化亮点 —— 雷达六维量化**行为质量**（执行程度 / 投资纪律 / …），对照线量化**行为代价**（实线 vs 影线的 ¥ / %）。两者配合回答用户最痛的问题："我的低分到底亏了我多少钱 / 假如我守纪律会多赚多少"。**功能取舍时此组合优先级最高**，其他 nice-to-have 让路。Phase 1h 不能跳过，但当前不抢节奏，细节（命名 / 锚点 / 现金流默认 / 费率）冻到 1f 临近再解冻 · 本次 session
 - 2026-04-26 · 「对照线」（暂名，候选：对照线 / 应得净值 / 影子组合 / 假如坚持，待最终命名）确定为 `NavCard` 上的叠加图层（toggle + 锚点 picker 复用现有 1M/3M/6M/1Y），不开独立 tab。算法 = 反事实重放，复用 Phase 1f backtest 引擎；起点对齐到锚点日实线 NAV，差距完全归因于这段期间行为成本。**红线建议**：app 内禁出现「预测 / 收益预估」字样，统一限定到「过去 / 历史 / 假如」（监管口径）。Phase 排到 1f 之后（暂记 `Phase 1h: 对照线`），命名/默认锚点/现金流默认/费率四题待 Elvis 裁后写进 PRD §7.2 · 本次 session 讨论
@@ -87,7 +88,7 @@
 |---|---|---|
 | 1 | PRD 不动 | ✅ |
 | 2 | 不加三方 SDK / tracker / 网络请求 | ✅ |
-| 3 | 不动权限声明（Info.plist / entitlements） | ✅ 仅 App Group，无新增权能 |
+| 3 | 不动权限声明（Info.plist / entitlements） | ✅ 仅 App Group（1b-1 漏写、本次回归修复 ⚠️ PERMISSION CHANGE 已标，无新增权能） |
 | 4 | 商业决策停手 | — 暂无待决 |
 | 5 | 算法漂移 | ✅ 无 drift（XIRR / 雷达 / NAV 数字未与旧 app 比对，等 1d/1e 接真实数据再核） |
 | 6 | design 不动 | ✅ |
