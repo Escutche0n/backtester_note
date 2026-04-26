@@ -37,7 +37,10 @@ struct TotalHeader: View {
 
             Spacer()
 
-            Button(action: onSettings) {
+            Button {
+                BNHaptics.tap()
+                onSettings()
+            } label: {
                 Image(systemName: "gearshape")
                     .font(BNTokens.Typography.text(size: 15))
                     .foregroundStyle(BNTokens.Colors.foregroundSecondary)

@@ -12,7 +12,7 @@ struct BacktestHistoryList: View {
 
                 Spacer()
 
-                Button("对比") {}
+                Button("对比") { BNHaptics.tap() }
                     .font(BNTokens.Typography.text(size: 11))
                     .buttonStyle(.bordered)
                     .tint(BNTokens.Colors.foregroundSecondary)

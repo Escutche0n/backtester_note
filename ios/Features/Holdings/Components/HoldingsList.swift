@@ -22,6 +22,7 @@ struct HoldingsList: View {
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 164)
+                .sensoryFeedback(.selection, trigger: sortKey)
             }
 
             ForEach(funds) { fund in

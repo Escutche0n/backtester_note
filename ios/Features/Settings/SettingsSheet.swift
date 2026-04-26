@@ -63,6 +63,7 @@ struct SettingsSheet: View {
     private var shortcutsSection: some View {
         Section("快捷指令 & JSON 导入") {
             Button {
+                BNHaptics.tap()
                 importing = true
             } label: {
                 SettingsRow(title: "选择 JSON 文件", value: "预览", systemImage: "square.and.arrow.down")

@@ -25,11 +25,24 @@ struct MockLineChart: View {
 
                 if showFill {
                     fillPath(linePath: linePath, points: series, bounds: bounds, size: size)
-                        .fill(color.opacity(0.12))
+                        .fill(
+                            LinearGradient(
+                                colors: [color.opacity(0.32), color.opacity(0)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                 }
 
                 linePath
-                    .stroke(color, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+                    .stroke(
+                        LinearGradient(
+                            colors: [color, color.opacity(0.45)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round)
+                    )
             }
         }
     }

@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-26
-- 上次更新者：Claude / Opus（log 对照线 × 雷达 = 北极星定位）
+- 上次更新者：Claude / Opus（1b-visual-4 haptics + chart gradient）
 
 ---
 
@@ -27,6 +27,7 @@
 | 1b-visual | AppIcon + 纯色暗色面视觉微调（移除当前 UI gradient / Material） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1b-visual-2 | 字体与底色微调（正文 bold system / 中文 PingFang fallback，数字 SF Mono 同族，底色 `#1E1E20`） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1b-visual-3 | 背景 / 卡片颜色微调（页面纯黑，卡片 `rgb(28, 28, 30)`） | ✅ done | 本次 | GPT（Elvis 指派） |
+| 1b-visual-4 | 基础 haptic（tap / selection / success）+ `MockLineChart` vertical gradient（Peak watch 风） | ⏳ 真机过手中 | 本次 | Claude（Elvis 指派） |
 | 1c | ImportService（快捷指令 JSON 导入） | ⏳ preview done / persistence next | 本次 | GPT（Elvis 指派） |
 | 1d | Networking + portfolio/history 接入 | 待排 | — | Opus |
 | 1e | NAV / 雷达图渲染 | 待排 | — | Opus |
@@ -45,6 +46,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-26 · 引入 `BNHaptics`（tap / emphasis / success 三档）；所有 Picker / Toggle 走 `.sensoryFeedback(.selection, trigger:)`，所有 Button 走 `BNHaptics.tap()`，「开始回测」CTA 走 `success()`（Phase 1f 真实回测后改为提交=tap、回调=success/error）。`MockLineChart` stroke / fill 改 vertical LinearGradient（顶亮底淡，Peak watch 风），不动 PRD §7.1 红涨绿跌色规则 · 2026-04-26_ios_phase1b-visual-4-haptics-chart-gradient worklog
 - 2026-04-26 · **产品北极星（new）**：「对照线 × 雷达」是 app 的核心差异化亮点 —— 雷达六维量化**行为质量**（执行程度 / 投资纪律 / …），对照线量化**行为代价**（实线 vs 影线的 ¥ / %）。两者配合回答用户最痛的问题："我的低分到底亏了我多少钱 / 假如我守纪律会多赚多少"。**功能取舍时此组合优先级最高**，其他 nice-to-have 让路。Phase 1h 不能跳过，但当前不抢节奏，细节（命名 / 锚点 / 现金流默认 / 费率）冻到 1f 临近再解冻 · 本次 session
 - 2026-04-26 · 「对照线」（暂名，候选：对照线 / 应得净值 / 影子组合 / 假如坚持，待最终命名）确定为 `NavCard` 上的叠加图层（toggle + 锚点 picker 复用现有 1M/3M/6M/1Y），不开独立 tab。算法 = 反事实重放，复用 Phase 1f backtest 引擎；起点对齐到锚点日实线 NAV，差距完全归因于这段期间行为成本。**红线建议**：app 内禁出现「预测 / 收益预估」字样，统一限定到「过去 / 历史 / 假如」（监管口径）。Phase 排到 1f 之后（暂记 `Phase 1h: 对照线`），命名/默认锚点/现金流默认/费率四题待 Elvis 裁后写进 PRD §7.2 · 本次 session 讨论
 - 2026-04-26 · IA 仍按 PRD §2 冻结的 2 tab 走，不升 5 tab / 不升 4 tab。空旷感等 1c 写入 + 1d 真实数据 + 对照线全落完再判断。若届时仍觉得少，**优先走「流水从设置齿轮升级为独立全屏 sheet」**（持仓页 `TotalHeader` 旁加 `list.bullet` 入口），不动 PRD §2；只有 sheet 方案憋住才考虑改 PRD 升 3 tab `持仓 / 流水 / 回测` · 本次 session 讨论

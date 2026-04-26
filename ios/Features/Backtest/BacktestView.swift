@@ -37,6 +37,7 @@ struct BacktestView: View {
             Spacer()
 
             Button {
+                BNHaptics.tap()
                 // TODO 1f: prefill ConfigCard from current holdings (PRD §7.3)
             } label: {
                 Label("新建", systemImage: "plus")
@@ -61,6 +62,7 @@ struct BacktestView: View {
         .pickerStyle(.segmented)
         .padding(.horizontal, 16)
         .padding(.top, 10)
+        .sensoryFeedback(.selection, trigger: mode)
     }
 }
 

@@ -37,7 +37,7 @@ struct BacktestConfigCard: View {
                 sipRulePanel
             }
 
-            Button("开始回测") {}
+            Button("开始回测") { BNHaptics.success() }
                 .font(BNTokens.Typography.text(size: 14))
                 .foregroundStyle(BNTokens.Colors.background)
                 .frame(maxWidth: .infinity)
@@ -127,6 +127,7 @@ struct BacktestConfigCard: View {
                     Text("月定投").tag("月定投")
                 }
                 .pickerStyle(.segmented)
+                .sensoryFeedback(.selection, trigger: frequency)
 
                 HStack {
                     miniInfo("扣款日", frequency == "月定投" ? "每月 15 日" : "周一")
@@ -138,6 +139,7 @@ struct BacktestConfigCard: View {
                     Toggle("启用再平衡", isOn: $rebalanceEnabled)
                         .font(BNTokens.Typography.text(size: 12))
                         .tint(BNTokens.Colors.up)
+                        .sensoryFeedback(.selection, trigger: rebalanceEnabled)
 
                     if rebalanceEnabled {
                         HStack {
@@ -176,7 +178,10 @@ private struct PortfolioPill: View {
     let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
+        Button {
+            BNHaptics.tap()
+            action()
+        } label: {
             VStack(alignment: .leading, spacing: 3) {
                 Text(portfolio.name)
                     .font(BNTokens.Typography.text(size: 13))

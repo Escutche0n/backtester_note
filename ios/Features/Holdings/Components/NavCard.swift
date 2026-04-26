@@ -73,6 +73,7 @@ struct NavCard: View {
             }
             .pickerStyle(.segmented)
             .frame(maxWidth: 232)
+            .sensoryFeedback(.selection, trigger: selectedRange)
 
             Spacer()
 

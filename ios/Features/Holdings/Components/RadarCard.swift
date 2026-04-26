@@ -58,6 +58,7 @@ struct RadarCard: View {
             }
             .pickerStyle(.segmented)
             .frame(width: 136)
+            .sensoryFeedback(.selection, trigger: selectedKey)
         }
     }
 
