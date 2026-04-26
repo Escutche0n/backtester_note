@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-26
-- 上次更新者：Claude / Opus（restore App Group entitlement, Codex review fix）
+- 上次更新者：GPT（1.0 App Store scope boundary）
 
 ---
 
@@ -46,6 +46,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-26 · Elvis 裁定 1.0 上架范围：国内公募基金（按支付宝覆盖范围理解）、手动 JSON 导入、手动维护 4 位日净值、真实持仓、影子持仓、完整历史回测四模式（一直持有 / 定投 / 定期再平衡 / 阈值再平衡）、持仓页 8 个状态 graph。Pro 自动拉取 / 后台同步 / 云备份 / 桌面 WidgetKit 不进 1.0。8 个 graph 是 App 内持仓页组件，不是桌面 WidgetKit · docs/scope/v1_0_app_store_scope.md
 - 2026-04-26 · 修复 1b-1 起 `BacktesterNote.entitlements` / `BacktesterNoteWidgets.entitlements` 一直是空 `<dict/>` 的回归 —— 把 §2 决议簿 2026-04-25 已冻结的 App Group `group.com.chenyuefu.backtester-note` 写回两个文件。⚠️ PERMISSION CHANGE 已在 worklog 标红；无新增权限维度。模拟器静默通过；真机 / 上架时这条若缺 widget snapshot 共享会 runtime 失败。Codex review 抓到的 · 2026-04-26_ios_restore-app-group-entitlement worklog
 - 2026-04-26 · 引入 `BNHaptics`（tap / emphasis / success 三档）；所有 Picker / Toggle 走 `.sensoryFeedback(.selection, trigger:)`，所有 Button 走 `BNHaptics.tap()`，「开始回测」CTA 走 `success()`（Phase 1f 真实回测后改为提交=tap、回调=success/error）。`MockLineChart` stroke / fill 改 vertical LinearGradient（顶亮底淡，Peak watch 风），不动 PRD §7.1 红涨绿跌色规则 · 2026-04-26_ios_phase1b-visual-4-haptics-chart-gradient worklog
 - 2026-04-26 · **产品北极星（new）**：「对照线 × 雷达」是 app 的核心差异化亮点 —— 雷达六维量化**行为质量**（执行程度 / 投资纪律 / …），对照线量化**行为代价**（实线 vs 影线的 ¥ / %）。两者配合回答用户最痛的问题："我的低分到底亏了我多少钱 / 假如我守纪律会多赚多少"。**功能取舍时此组合优先级最高**，其他 nice-to-have 让路。Phase 1h 不能跳过，但当前不抢节奏，细节（命名 / 锚点 / 现金流默认 / 费率）冻到 1f 临近再解冻 · 本次 session
@@ -116,7 +117,7 @@
 
 ## 5. 下一步
 
-- **iOS（GPT / Elvis 另行指派）**：Phase 1c 下一刀 · 最小 Persistence / PortfolioService，接入“确认写入”。
+- **iOS（GPT / Elvis 另行指派）**：Phase 1c 下一刀 · 最小 Persistence / PortfolioService，接入“确认写入”。这是 1.0 scope 的数据地基；影子持仓、8 个状态 graph、历史回测都依赖本地数据闭环。
 - **Backend（GPT）**：`portfolio/history` 真实化（待 GPT 自排时机）
 - **Meta**：ARCH §8 回填 ✅ 完成（v1.3）。雷达 v1.1 ✅ 完成。下一个 Meta 任务待 Opus 1b 全部落完时校对 ARCH §3 目录骨架"最终态" vs "已落地"差异。
 - **Phase 1h（新增・暂排）对照线**：1f Backtest 引擎落地后启动。算法 = 反事实重放，UI = `NavCard` 叠加图层。**当前不开工、不催 Elvis 裁 §4 四题** —— 节奏优先于细枝末节；等 1f 进入 in-flight 状态再解冻这四题与 PRD §7.2 增补。Elvis 已确认对照线 × 雷达是北极星，到时不会被其他功能挤掉。
