@@ -62,7 +62,7 @@ struct HoldingCard: View {
                     .bnNumeric(14, weight: .semibold)
                     .foregroundStyle(BNTokens.Colors.foregroundPrimary)
 
-                Text("\(HoldingsFormatters.percent(fund.dayPct)) 今日")
+                Text("\(HoldingsFormatters.optionalPercent(fund.dayPct)) 今日")
                     .bnNumeric(10.5, weight: .semibold)
                     .foregroundStyle(HoldingsFormatters.pnlColor(fund.dayPct))
             }

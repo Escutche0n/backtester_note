@@ -17,7 +17,7 @@ struct TotalHeader: View {
                     .foregroundStyle(BNTokens.Colors.foregroundPrimary)
 
                 HStack(spacing: 8) {
-                    Text("\(HoldingsFormatters.signed(overview.dayPnl)) · \(HoldingsFormatters.percent(overview.dayPct))")
+                    Text("\(HoldingsFormatters.optionalSigned(overview.dayPnl)) · \(HoldingsFormatters.optionalPercent(overview.dayPct))")
                         .bnNumeric(13, weight: .semibold)
                         .foregroundStyle(HoldingsFormatters.pnlColor(overview.dayPnl))
 

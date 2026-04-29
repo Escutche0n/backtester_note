@@ -21,8 +21,30 @@ enum HoldingsFormatters {
         "\(signed(value, fractionDigits: fractionDigits))%"
     }
 
+    static func optionalSigned(_ value: Double?, fractionDigits: Int = 2, placeholder: String = "待算") -> String {
+        guard let value else { return placeholder }
+        return signed(value, fractionDigits: fractionDigits)
+    }
+
+    static func optionalPercent(_ value: Double?, fractionDigits: Int = 2, placeholder: String = "待算") -> String {
+        guard let value else { return placeholder }
+        return percent(value, fractionDigits: fractionDigits)
+    }
+
+    static func optionalAbsPercent(_ value: Double?, fractionDigits: Int = 2, placeholder: String = "待算") -> String {
+        guard let value else { return placeholder }
+        return absPercent(value, fractionDigits: fractionDigits)
+    }
+
     static func absPercent(_ value: Double, fractionDigits: Int = 2) -> String {
         "\(String(format: "%.\(fractionDigits)f", value))%"
+    }
+
+    static func pnlColor(_ value: Double?) -> Color {
+        guard let value else {
+            return BNTokens.Colors.foregroundTertiary
+        }
+        return pnlColor(value)
     }
 
     static func pnlColor(_ value: Double) -> Color {

@@ -6,19 +6,19 @@ struct OverviewPanel: View {
     private var rows: [[OverviewMetric]] {
         [
             [
-                .init(label: "当日盈亏", value: HoldingsFormatters.signed(overview.dayPnl), color: HoldingsFormatters.pnlColor(overview.dayPnl)),
-                .init(label: "当日收益率", value: HoldingsFormatters.percent(overview.dayPct), color: HoldingsFormatters.pnlColor(overview.dayPct)),
-                .init(label: "当日回撤", value: HoldingsFormatters.absPercent(overview.dayDrawdown), color: BNTokens.Colors.foregroundSecondary)
+                .init(label: "当日盈亏", value: HoldingsFormatters.optionalSigned(overview.dayPnl), color: HoldingsFormatters.pnlColor(overview.dayPnl)),
+                .init(label: "当日收益率", value: HoldingsFormatters.optionalPercent(overview.dayPct), color: HoldingsFormatters.pnlColor(overview.dayPct)),
+                .init(label: "当日回撤", value: HoldingsFormatters.optionalAbsPercent(overview.dayDrawdown), color: BNTokens.Colors.foregroundSecondary)
             ],
             [
                 .init(label: "持有收益", value: HoldingsFormatters.signed(overview.holdPnl, fractionDigits: 0), color: HoldingsFormatters.pnlColor(overview.holdPnl)),
                 .init(label: "持有收益率", value: HoldingsFormatters.percent(overview.holdPct), color: HoldingsFormatters.pnlColor(overview.holdPct)),
-                .init(label: "XIRR", value: HoldingsFormatters.percent(overview.xirr), color: HoldingsFormatters.pnlColor(overview.xirr))
+                .init(label: "XIRR", value: HoldingsFormatters.optionalPercent(overview.xirr), color: HoldingsFormatters.pnlColor(overview.xirr))
             ],
             [
-                .init(label: "超额 vs 沪深300", value: HoldingsFormatters.percent(overview.excess), color: HoldingsFormatters.pnlColor(overview.excess)),
-                .init(label: "近半年最大回撤", value: HoldingsFormatters.absPercent(overview.maxDrawdown6M), color: BNTokens.Colors.foregroundSecondary),
-                .init(label: "夏普 / 卡尔马", value: "\(String(format: "%.2f", overview.sharpe)) · \(String(format: "%.2f", overview.calmar))", color: BNTokens.Colors.foregroundPrimary)
+                .init(label: "超额 vs 沪深300", value: HoldingsFormatters.optionalPercent(overview.excess), color: HoldingsFormatters.pnlColor(overview.excess)),
+                .init(label: "近半年最大回撤", value: HoldingsFormatters.optionalAbsPercent(overview.maxDrawdown6M), color: BNTokens.Colors.foregroundSecondary),
+                .init(label: "夏普 / 卡尔马", value: ratioText(overview.sharpe, overview.calmar), color: BNTokens.Colors.foregroundPrimary)
             ]
         ]
     }
@@ -51,15 +51,30 @@ struct OverviewPanel: View {
                 .font(BNTokens.Typography.text(size: 10.5))
                 .foregroundStyle(BNTokens.Colors.foregroundTertiary)
 
-            Text("\(String(format: "%.1f", overview.unbalance * 100))%")
+            Text(unbalanceText)
                 .bnNumeric(11, weight: .semibold)
-                .foregroundStyle(overview.unbalance > 0.1 ? BNTokens.Colors.accent : BNTokens.Colors.foregroundSecondary)
+                .foregroundStyle((overview.unbalance ?? 0) > 0.1 ? BNTokens.Colors.accent : BNTokens.Colors.foregroundSecondary)
 
-            ProgressView(value: min(1, overview.unbalance * 3))
-                .tint(overview.unbalance > 0.1 ? BNTokens.Colors.accent : BNTokens.Colors.foregroundSecondary)
+            ProgressView(value: min(1, (overview.unbalance ?? 0) * 3))
+                .tint((overview.unbalance ?? 0) > 0.1 ? BNTokens.Colors.accent : BNTokens.Colors.foregroundSecondary)
                 .frame(width: 44)
                 .scaleEffect(x: 1, y: 0.45, anchor: .center)
+                .opacity(overview.unbalance == nil ? 0.35 : 1)
         }
+    }
+
+    private var unbalanceText: String {
+        guard let unbalance = overview.unbalance else {
+            return "待算"
+        }
+        return "\(String(format: "%.1f", unbalance * 100))%"
+    }
+
+    private func ratioText(_ sharpe: Double?, _ calmar: Double?) -> String {
+        guard let sharpe, let calmar else {
+            return "待算"
+        }
+        return "\(String(format: "%.2f", sharpe)) · \(String(format: "%.2f", calmar))"
     }
 
     private func metricRow(_ metrics: [OverviewMetric]) -> some View {

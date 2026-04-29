@@ -84,10 +84,21 @@ struct PortfolioCommitSummary: Equatable, Sendable {
     var newBaselineDate: Date?
 }
 
+struct PortfolioCommitPlan: Equatable, Sendable {
+    var summary: PortfolioCommitSummary
+    var hasStoreLoadError: Bool
+
+    var needsConfirmation: Bool {
+        summary.baselineMoved || hasStoreLoadError
+    }
+}
+
 enum PortfolioError: LocalizedError, Equatable {
     case importHasFatalIssues
     case missingDocument
     case baselineCannotMoveBackward(accountID: String, existing: Date, incoming: Date)
+    case invalidBaselineState(accountID: String)
+    case storeLoadFailed
     case cannotDeleteBaseline
 
     var errorDescription: String? {
@@ -98,6 +109,10 @@ enum PortfolioError: LocalizedError, Equatable {
             "导入预览没有可写入的文档。"
         case let .baselineCannotMoveBackward(accountID, existing, incoming):
             "账户 \(accountID) 的 baseline 只能前移，不能从 \(ImportDateFormatter.dayString(existing)) 后移到 \(ImportDateFormatter.dayString(incoming))。"
+        case let .invalidBaselineState(accountID):
+            "账户 \(accountID) 的 baseline 状态无效，不能写入。"
+        case .storeLoadFailed:
+            "本地持仓文件加载失败。为避免覆盖旧数据，需要用户确认后才能写入。"
         case .cannotDeleteBaseline:
             "baseline snapshot 不允许删除。"
         }

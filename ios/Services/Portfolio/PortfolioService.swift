@@ -5,26 +5,52 @@ import Foundation
 final class PortfolioService: ObservableObject {
     @Published private(set) var accounts: [PortfolioAccount] = []
     @Published private(set) var lastCommitSummary: PortfolioCommitSummary?
+    @Published private(set) var loadError: Error?
 
-    private let store: PortfolioFileStore
+    let store: PortfolioFileStore
 
     init(store: PortfolioFileStore? = nil) {
         if let store {
             self.store = store
         } else {
-            self.store = (try? PortfolioFileStore.defaultStore()) ?? PortfolioFileStore(
-                fileURL: FileManager.default.temporaryDirectory.appendingPathComponent("portfolio.v1.json")
-            )
+            do {
+                self.store = try PortfolioFileStore.defaultStore()
+            } catch {
+                fatalError("Portfolio store unavailable: \(error.localizedDescription)")
+            }
         }
 
-        accounts = (try? self.store.load()) ?? []
+        do {
+            accounts = try self.store.load()
+        } catch {
+            loadError = error
+            accounts = []
+        }
     }
 
     var currentAccount: PortfolioAccount? {
         accounts.sorted { $0.accountID < $1.accountID }.first
     }
 
-    func commit(_ preview: ImportPreview) throws -> PortfolioCommitSummary {
+    func previewCommit(_ preview: ImportPreview) throws -> PortfolioCommitPlan {
+        let result = try buildCommitResult(from: preview)
+        return PortfolioCommitPlan(summary: result.summary, hasStoreLoadError: loadError != nil)
+    }
+
+    func commit(_ preview: ImportPreview, allowOverwriteAfterLoadFailure: Bool = false) throws -> PortfolioCommitSummary {
+        if loadError != nil && !allowOverwriteAfterLoadFailure {
+            throw PortfolioError.storeLoadFailed
+        }
+
+        let result = try buildCommitResult(from: preview)
+        accounts = result.accounts.sorted { $0.accountID < $1.accountID }
+        try store.save(accounts)
+        loadError = nil
+        lastCommitSummary = result.summary
+        return result.summary
+    }
+
+    private func buildCommitResult(from preview: ImportPreview) throws -> (accounts: [PortfolioAccount], summary: PortfolioCommitSummary) {
         guard preview.canCommit else {
             throw PortfolioError.importHasFatalIssues
         }
@@ -47,10 +73,7 @@ final class PortfolioService: ObservableObject {
             try merge(incoming, into: &nextAccounts, summary: &summary)
         }
 
-        accounts = nextAccounts.sorted { $0.accountID < $1.accountID }
-        try store.save(accounts)
-        lastCommitSummary = summary
-        return summary
+        return (nextAccounts, summary)
     }
 
     func deleteBaselineSnapshot() throws {
@@ -79,7 +102,7 @@ final class PortfolioService: ObservableObject {
         guard let incomingBaseline = incoming.snapshots.first(where: \.isBaseline),
               let existingBaseline = account.snapshots.first(where: \.isBaseline)
         else {
-            return
+            throw PortfolioError.invalidBaselineState(accountID: account.accountID)
         }
 
         if incomingBaseline.date > existingBaseline.date {
@@ -94,6 +117,7 @@ final class PortfolioService: ObservableObject {
             summary.baselineMoved = true
             summary.oldBaselineDate = existingBaseline.date
             summary.newBaselineDate = incomingBaseline.date
+            // TODO 1d/1e/1f: baselineMoved must trigger NAV, radar, and saved backtest recompute.
             for index in account.snapshots.indices {
                 account.snapshots[index].isBaseline = false
             }
@@ -181,11 +205,28 @@ final class PortfolioService: ObservableObject {
         PortfolioFlow(
             date: importFlow.date,
             code: importFlow.code,
-            type: PortfolioFlowType(rawValue: importFlow.type.rawValue) ?? .buy,
+            type: PortfolioFlowType(importFlow.type),
             amount: importFlow.amount,
             shares: importFlow.shares,
             fee: importFlow.fee ?? 0,
             note: importFlow.note
         )
+    }
+}
+
+private extension PortfolioFlowType {
+    init(_ importType: ImportFlowType) {
+        switch importType {
+        case .buy:
+            self = .buy
+        case .sell:
+            self = .sell
+        case .dividend:
+            self = .dividend
+        case .transferIn:
+            self = .transferIn
+        case .transferOut:
+            self = .transferOut
+        }
     }
 }

@@ -79,17 +79,17 @@ private struct HoldingsDisplayData {
         overview = HoldingsOverview(
             totalValue: totalValue,
             unitNAV: baselineValue > 0 ? totalValue / baselineValue : 1,
-            dayPnl: 0,
-            dayPct: 0,
-            dayDrawdown: 0,
+            dayPnl: nil,
+            dayPct: nil,
+            dayDrawdown: nil,
             holdPnl: holdPnl,
             holdPct: holdPct,
-            xirr: 0,
-            excess: 0,
-            maxDrawdown6M: 0,
-            sharpe: 0,
-            calmar: 0,
-            unbalance: 0
+            xirr: nil,
+            excess: nil,
+            maxDrawdown6M: nil,
+            sharpe: nil,
+            calmar: nil,
+            unbalance: nil
         )
 
         funds = latest.holdings.map { holding in
@@ -106,7 +106,7 @@ private struct HoldingsDisplayData {
                 value: holding.value,
                 cost: cost,
                 shares: holding.shares,
-                dayPct: 0,
+                dayPct: nil,
                 holdPct: holdPct,
                 sparkline: HoldingsMockData.makeSeries(days: 30, seed: Self.sparklineSeed(for: holding.code), volatility: 0.004, drift: 0)
             )

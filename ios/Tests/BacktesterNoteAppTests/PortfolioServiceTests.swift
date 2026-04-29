@@ -37,11 +37,42 @@ final class PortfolioServiceTests: XCTestCase {
         let service = makeService()
         _ = try service.commit(ImportService.preview(data: Self.importJSON(baseline: "2024-02-01")))
 
-        let moved = try service.commit(ImportService.preview(data: Self.importJSON(baseline: "2024-01-01")))
+        let preview = ImportService.preview(data: Self.importJSON(baseline: "2024-01-01"))
+        let plan = try service.previewCommit(preview)
+        let moved = try service.commit(preview)
 
+        XCTAssertTrue(plan.needsConfirmation)
         XCTAssertTrue(moved.baselineMoved)
         XCTAssertEqual(service.accounts.first?.snapshots.count, 2)
         XCTAssertEqual(service.accounts.first?.snapshots.filter(\.isBaseline).first?.date, ImportDateFormatter.parseDay("2024-01-01"))
+    }
+
+    func testLoadFailureRequiresExplicitOverwrite() throws {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("json")
+        try Data("broken".utf8).write(to: url)
+        let service = PortfolioService(store: PortfolioFileStore(fileURL: url))
+        let preview = ImportService.preview(data: Self.importJSON(baseline: "2024-01-01"))
+
+        let plan = try service.previewCommit(preview)
+
+        XCTAssertTrue(plan.hasStoreLoadError)
+        XCTAssertThrowsError(try service.commit(preview)) { error in
+            XCTAssertEqual(error as? PortfolioError, .storeLoadFailed)
+        }
+        XCTAssertNoThrow(try service.commit(preview, allowOverwriteAfterLoadFailure: true))
+        XCTAssertNil(service.loadError)
+    }
+
+    func testFileStoreRoundTripsAccounts() throws {
+        let service = makeService()
+        let preview = ImportService.preview(data: Self.importJSON(baseline: "2024-01-01"))
+        _ = try service.commit(preview)
+
+        let reloaded = PortfolioService(store: service.store)
+
+        XCTAssertEqual(reloaded.accounts, service.accounts)
     }
 
     private func makeService() -> PortfolioService {

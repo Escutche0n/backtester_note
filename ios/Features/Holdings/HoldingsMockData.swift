@@ -3,17 +3,17 @@ import Foundation
 struct HoldingsOverview: Sendable {
     let totalValue: Double
     let unitNAV: Double
-    let dayPnl: Double
-    let dayPct: Double
-    let dayDrawdown: Double
+    let dayPnl: Double?
+    let dayPct: Double?
+    let dayDrawdown: Double?
     let holdPnl: Double
     let holdPct: Double
-    let xirr: Double
-    let excess: Double
-    let maxDrawdown6M: Double
-    let sharpe: Double
-    let calmar: Double
-    let unbalance: Double
+    let xirr: Double?
+    let excess: Double?
+    let maxDrawdown6M: Double?
+    let sharpe: Double?
+    let calmar: Double?
+    let unbalance: Double?
 }
 
 struct HoldingFund: Identifiable, Sendable {
@@ -25,7 +25,7 @@ struct HoldingFund: Identifiable, Sendable {
     let value: Double
     let cost: Double
     let shares: Double
-    let dayPct: Double
+    let dayPct: Double?
     let holdPct: Double
     let sparkline: [ChartPoint]
 }

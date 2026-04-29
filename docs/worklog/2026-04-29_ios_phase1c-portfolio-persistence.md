@@ -65,6 +65,39 @@ xcodebuild test -project BacktesterNote.xcodeproj -scheme BacktesterNote \
 - `PortfolioPreferences.enabledOverviewGraphIDs` 作为可选预留是否足够承接 Elvis 后续 8 vs 9 graph 裁定。
 - 持仓页“真实数据第一刀”是否清楚地区分 snapshot 汇总与仍未接入的 NAV / 雷达 mock。
 
+### Claude review fixup（2026-04-29）
+
+Claude 对 commit `868f9a0` 给出 ⚠️ 有条件通过；本 fixup 已处理：
+
+- ✅ baseline 前移 UI 二次确认：新增 `PortfolioService.previewCommit(_:) -> PortfolioCommitPlan` dry-run，不写盘；`ImportPreviewView` 在 baseline 前移时弹确认文案：“XIRR 基准日将从 YYYY-MM-DD 改为 YYYY-MM-DD，历史 NAV 曲线会重算，是否继续？”
+- ✅ `OverviewPanel` 假 0：将 snapshot-only 无法计算的当日盈亏 / XIRR / 超额 / 回撤 / 夏普 / 卡尔马 / 失衡等字段改为 optional，真实导入数据下显示 `待算`，不再静默显示 0。
+- ✅ flow type fallback：删除 `PortfolioFlowType(rawValue:) ?? .buy`，改为 `ImportFlowType -> PortfolioFlowType` 的 exhaustive switch；未来新增 flow type 时编译器会要求同步处理。
+- ✅ store load silent：`PortfolioService` 现在保留 `loadError`；加载失败时不静默当空账户，commit 默认拒绝覆盖，只有 UI 二次确认后才允许 `allowOverwriteAfterLoadFailure`。
+- ✅ 额外收掉 Ideas 两条：补 `PortfolioFileStore` round-trip test；baseline 前移处加下游 NAV / 雷达 / 回测重算 TODO hook。
+
+Fixup verification：
+
+```bash
+swift test
+xcodebuild -project BacktesterNote.xcodeproj -scheme BacktesterNote \
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -configuration Debug build CODE_SIGNING_ALLOWED=NO
+xcodebuild build-for-testing -project BacktesterNote.xcodeproj -scheme BacktesterNote \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -configuration Debug CODE_SIGNING_ALLOWED=NO
+```
+
+结果：
+- `swift test`：13 个算法测试通过。
+- `xcodebuild build`：通过。
+- `xcodebuild build-for-testing`：通过，说明 app test target 编译通过。
+- `xcodebuild test`：当前 iPhone 17 与 iPhone 17 Pro 模拟器均被 SpringBoard Busy / preflight failure 阻断，未能启动 test runner；不是 Swift 编译失败。
+
+仍留 Ideas：
+
+- `expected_commit.json` 里 `nav_credibility_states` 语义偏元信息，后续可拆 fixture README。
+- Elvis 裁完 §4 graph 路径后，把 `enabledOverviewGraphIDs: [String]?` 升 `[OverviewGraphID]` enum。
+
 ## Conflict
 
 无新增冲突。既有 scope §7 “8 graph” vs PRD §7.2 “9 指标 3×3” 仍挂在 `docs/project_state.md` §4，本文不解决、不改 PRD。

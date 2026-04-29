@@ -6,6 +6,7 @@ struct ImportPreviewView: View {
     @EnvironmentObject private var portfolioService: PortfolioService
     @State private var commitSummary: PortfolioCommitSummary?
     @State private var commitError: String?
+    @State private var pendingPlan: PortfolioCommitPlan?
 
     var body: some View {
         NavigationStack {
@@ -31,6 +32,18 @@ struct ImportPreviewView: View {
                 Button("知道了", role: .cancel) {}
             } message: {
                 Text(commitError ?? "")
+            }
+            .confirmationDialog(
+                "确认写入",
+                isPresented: pendingPlanBinding,
+                titleVisibility: .visible
+            ) {
+                Button("继续写入", role: .destructive) {
+                    commitPreview(allowOverwriteAfterLoadFailure: true)
+                }
+                Button("取消", role: .cancel) {}
+            } message: {
+                Text(pendingPlanMessage)
             }
         }
     }
@@ -93,8 +106,7 @@ struct ImportPreviewView: View {
                 commitResult(summary: commitSummary)
             } else {
                 Button("确认写入") {
-                    BNHaptics.success()
-                    commitPreview()
+                    beginCommit()
                 }
                 .disabled(!preview.canCommit)
             }
@@ -140,9 +152,53 @@ struct ImportPreviewView: View {
         )
     }
 
-    private func commitPreview() {
+    private var pendingPlanBinding: Binding<Bool> {
+        Binding(
+            get: { pendingPlan != nil },
+            set: { isPresented in
+                if !isPresented {
+                    pendingPlan = nil
+                }
+            }
+        )
+    }
+
+    private var pendingPlanMessage: String {
+        guard let pendingPlan else { return "" }
+
+        var messages: [String] = []
+        if pendingPlan.summary.baselineMoved,
+           let oldDate = pendingPlan.summary.oldBaselineDate,
+           let newDate = pendingPlan.summary.newBaselineDate {
+            messages.append("XIRR 基准日将从 \(ImportDateFormatter.dayString(oldDate)) 改为 \(ImportDateFormatter.dayString(newDate))，历史 NAV 曲线会重算，是否继续？")
+        }
+        if pendingPlan.hasStoreLoadError {
+            messages.append("本地持仓文件加载失败。继续写入会覆盖当前损坏文件。")
+        }
+        return messages.joined(separator: "\n\n")
+    }
+
+    private func beginCommit() {
         do {
-            commitSummary = try portfolioService.commit(preview)
+            let plan = try portfolioService.previewCommit(preview)
+            if plan.needsConfirmation {
+                pendingPlan = plan
+            } else {
+                commitPreview(allowOverwriteAfterLoadFailure: false)
+            }
+        } catch {
+            commitError = error.localizedDescription
+        }
+    }
+
+    private func commitPreview(allowOverwriteAfterLoadFailure: Bool) {
+        do {
+            BNHaptics.success()
+            pendingPlan = nil
+            commitSummary = try portfolioService.commit(
+                preview,
+                allowOverwriteAfterLoadFailure: allowOverwriteAfterLoadFailure
+            )
         } catch {
             commitError = error.localizedDescription
         }
