@@ -2,6 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct SettingsSheet: View {
+    @EnvironmentObject private var portfolioService: PortfolioService
     @State private var importing = false
     @State private var preview: ImportPreview?
     @State private var importError: String?
@@ -40,9 +41,27 @@ struct SettingsSheet: View {
 
     private var accountSection: some View {
         Section("账户") {
-            SettingsRow(title: "主账户", value: "elvis · 默认", systemImage: "person.crop.circle")
-            SettingsRow(title: "账户数量", value: "1 / 3", systemImage: "tray.full")
+            NavigationLink {
+                ManualAccountEntryView()
+            } label: {
+                SettingsRow(
+                    title: "持仓快照",
+                    value: accountStatusValue,
+                    systemImage: "person.crop.circle"
+                )
+            }
+            .buttonStyle(.plain)
+            SettingsRow(title: "账户数量", value: "\(portfolioService.accounts.count) / 3", systemImage: "tray.full")
         }
+    }
+
+    private var accountStatusValue: String {
+        guard let account = portfolioService.currentAccount,
+              let baseline = account.snapshots.first(where: \.isBaseline)
+        else {
+            return "新建"
+        }
+        return "\(account.displayName) · \(ImportDateFormatter.dayString(baseline.date))"
     }
 
     private var dataSection: some View {
