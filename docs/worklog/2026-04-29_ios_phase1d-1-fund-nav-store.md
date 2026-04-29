@@ -59,7 +59,19 @@ xcodebuild build-for-testing -project BacktesterNote.xcodeproj -scheme Backteste
 
 ## Review
 
-待 Claude / Elvis review。
+Elvis review（2026-04-29）：⚠️ 有条件通过。
+
+必修：
+- `fund_nav_minimal/fund_nav.v1.json` 记录顺序与 `FundNAVService.sorted` 写盘顺序不一致，必须改成 code/date 升序，避免后续 round-trip diff 炸掉。
+
+GPT fixup：
+- ✅ `fund_nav.v1.json` 改成 `000001/2024-01-02` → `510300/2024-01-02` → `510300/2024-01-03`，与真实 store 输出顺序一致。
+- ✅ `expected.json` 重命名为 `metadata.json`，README 明确它是 fixture invariant 元信息，不是 service round-trip expected output。
+- ✅ 补 `allowOverwriteAfterLoadFailure: true` happy-path 测试：损坏文件经显式允许后能写入，并清空 `loadError`。
+
+未处理 / 留 Ideas：
+- `FundNAVService.defaultStore()` 初始化失败仍是 `fatalError`，与 `PortfolioService` 一致暂不扩本刀；未来 UI 层需要更完整错误恢复时可改 throwing init。
+- 主线程同步 IO、`NumberFormatter` 格式化、删除 / 编辑 service API 留到 1d-2 / 后续数据量变大时处理。
 
 ## Conflict
 

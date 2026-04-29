@@ -93,6 +93,16 @@ final class FundNAVServiceTests: XCTestCase {
         )) { error in
             XCTAssertEqual(error as? FundNAVError, .storeLoadFailed)
         }
+
+        let record = try service.upsert(
+            code: "510300",
+            date: ImportDateFormatter.parseDay("2024-01-02")!,
+            nav: Decimal(string: "4.1234")!,
+            allowOverwriteAfterLoadFailure: true
+        )
+
+        XCTAssertNil(service.loadError)
+        XCTAssertEqual(service.records(for: "510300"), [record])
     }
 
     private func makeService() -> FundNAVService {

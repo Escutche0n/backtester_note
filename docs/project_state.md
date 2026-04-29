@@ -29,7 +29,7 @@
 | 1b-visual-3 | 背景 / 卡片颜色微调（页面纯黑，卡片 `rgb(28, 28, 30)`） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1b-visual-4 | 基础 haptic（tap / selection / success）+ `MockLineChart` vertical gradient（Peak watch 风） | ⏳ 真机过手中 | 本次 | Claude（Elvis 指派） |
 | 1c | ImportService（快捷指令 JSON 导入）+ 最小 PortfolioService persistence | ✅ done + Claude review ✅ | `868f9a0` + `1dd6268` fixup | GPT 主笔 / Claude review |
-| 1d-local | 手动日净值录入 + 持久化（1d-1 数据层） | ✅ 1d-1 done + review pending | 本次 | GPT |
+| 1d-local | 手动日净值录入 + 持久化（1d-1 数据层） | ✅ 1d-1 done + review fixup | `610f591` + 本次 fixup | GPT |
 | 1e | NAV / 雷达图渲染 | 待排 | — | Opus |
 | 1f | Backtest 第一刀 | 待排 | — | Opus |
 | 1g | Widgets 业务化（用 token） | 待排 | — | Opus |
@@ -46,6 +46,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-29 · Phase 1d-1 review fixup：`fund_nav_minimal/fund_nav.v1.json` 改为与 `FundNAVService` 写盘一致的 code/date 升序；`expected.json` 重命名 `metadata.json` 避免误解为 round-trip output；补损坏 store 经显式允许后覆盖写入并清空 `loadError` 的测试 · 2026-04-29_ios_phase1d-1-fund-nav-store worklog `## Review`
 - 2026-04-29 · Phase 1d 方向调整：原 “Networking + portfolio/history” 整组推到 Phase 3 Pro 自动化；1.0 收紧为纯本地 JSON 闭环。1d 重新定义为 `1d-local · 手动日净值录入 + 持久化`，本次 1d-1 只落数据层：`FundDailyNAVRecord` / `FundNAVStore` / `FundNAVService` / app unit tests / `fund_nav_minimal` golden fixture。NAV 本地存储使用 `Decimal` 并编码为 4 位字符串；后续算法层若继续按 `Double` 计算，在服务边界转换 · 2026-04-29_ios_phase1d-1-fund-nav-store worklog
 - 2026-04-29 · Claude 关闭 Phase 1c review，✅ 通过。第一轮 ⚠️ 有条件通过提了 4 条必修（baseline 前移 UI 弹窗 / OverviewPanel 假 0 / flow type fallback / store load silent）+ 5 条 Ideas；GPT fixup `1dd6268` 4 条必修全闭合 + 收掉 3/5 Ideas（FileStore round-trip test / merge guard throw / baselineMoved TODO hook），剩两条合理留待后续（fixture README / `enabledOverviewGraphIDs` 升 enum）。`xcodebuild test` 模拟器环境问题不阻塞关闭 · 2026-04-29_ios_phase1c-portfolio-persistence worklog `## Review`
 - 2026-04-29 · Phase 1c review fixup：补 baseline 前移 UI 二次确认；snapshot-only 无法计算指标改为 `待算` 而非 0；删除 flow type `.buy` fallback；本地 store load 失败保留 `loadError` 且默认拒绝覆盖；补 FileStore round-trip 与 load-error 测试。`xcodebuild build` / `build-for-testing` 通过；`xcodebuild test` 当前被 iPhone 17 / 17 Pro 模拟器 Busy/preflight 阻断 · 2026-04-29_ios_phase1c-portfolio-persistence worklog
