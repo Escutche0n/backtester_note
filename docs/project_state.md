@@ -8,8 +8,8 @@
 ## 0. 元信息
 
 - 文件版本：v1
-- 上次更新：2026-04-26
-- 上次更新者：GPT（1.0 App Store scope boundary）
+- 上次更新：2026-04-29
+- 上次更新者：Claude（v1-scope-boundary review；挂起 8 vs 9 graph PRD 冲突）
 
 ---
 
@@ -46,6 +46,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-29 · Claude 完成 v1-scope-boundary review，✅ 通过。两条 ✅（准确反映 Elvis 裁定 / "8 graph 非桌面 Widget" 表述清晰）+ 1 处硬冲突挂起 Elvis（scope §7 "8 graph" vs PRD §7.2 "OverviewPanel 9 指标 3×3"，Elvis 口头倾向"用户自选不强制 3×3"但 PRD 冻结）+ 三处 gap 落 worklog Ideas（Golden fixture CI / 快照前移规则 / NAV 5 状态机）。本次 review 不动 PRD、不动 scope · 2026-04-26_ios_v1-scope-boundary worklog `## Review`
 - 2026-04-26 · Elvis 裁定 1.0 上架范围：国内公募基金（按支付宝覆盖范围理解）、手动 JSON 导入、手动维护 4 位日净值、真实持仓、影子持仓、完整历史回测四模式（一直持有 / 定投 / 定期再平衡 / 阈值再平衡）、持仓页 8 个状态 graph。Pro 自动拉取 / 后台同步 / 云备份 / 桌面 WidgetKit 不进 1.0。8 个 graph 是 App 内持仓页组件，不是桌面 WidgetKit · docs/scope/v1_0_app_store_scope.md
 - 2026-04-26 · 修复 1b-1 起 `BacktesterNote.entitlements` / `BacktesterNoteWidgets.entitlements` 一直是空 `<dict/>` 的回归 —— 把 §2 决议簿 2026-04-25 已冻结的 App Group `group.com.chenyuefu.backtester-note` 写回两个文件。⚠️ PERMISSION CHANGE 已在 worklog 标红；无新增权限维度。模拟器静默通过；真机 / 上架时这条若缺 widget snapshot 共享会 runtime 失败。Codex review 抓到的 · 2026-04-26_ios_restore-app-group-entitlement worklog
 - 2026-04-26 · 引入 `BNHaptics`（tap / emphasis / success 三档）；所有 Picker / Toggle 走 `.sensoryFeedback(.selection, trigger:)`，所有 Button 走 `BNHaptics.tap()`，「开始回测」CTA 走 `success()`（Phase 1f 真实回测后改为提交=tap、回调=success/error）。`MockLineChart` stroke / fill 改 vertical LinearGradient（顶亮底淡，Peak watch 风），不动 PRD §7.1 红涨绿跌色规则 · 2026-04-26_ios_phase1b-visual-4-haptics-chart-gradient worklog
@@ -100,7 +101,11 @@
 
 > 只列**尚未裁定**的；裁定后挪到 §2 决议簿。
 
-- （暂无 Elvis 待答）
+- **持仓页 graph 数量与"用户自选"路径**（2026-04-29 Claude review 升级）：scope §7 "8 graph" 与 PRD §7.2 冻结的 `OverviewPanel` "9 指标 3×3 网格" 冲突。Elvis 2026-04-29 口头倾向"可让用户自选 graph、不强制 3×3"。待裁定项：
+  - (a) 直接改 PRD §7.2：`OverviewPanel` 改为"用户自选 N 项，默认 8"，3×3 网格降级为"默认布局"；或
+  - (b) scope 注脚说明"以 PRD §7.2 9 指标 3×3 为准、用户自选作为 1.0 之后增量"，本期不动；或
+  - (c) 其他路径（例如 1.0 锁定 8 项默认、用户自选作为 1.1 增量）。
+  - 如裁 (a)：需新增"用户偏好（启用了哪些 graph、顺序）"持久化项 —— 直接影响 1c persistence schema 设计，**越早裁越好**。
 
 **待 Elvis 裁定（对照线 spec）**：
 - 命名（对照线 / 应得净值 / 影子组合 / 假如坚持 / 其他）
