@@ -9,7 +9,7 @@
 
 - 文件版本：v1
 - 上次更新：2026-04-29
-- 上次更新者：Claude（关闭 Phase 1c review）
+- 上次更新者：GPT（Phase 1d-1 local NAV persistence）
 
 ---
 
@@ -29,13 +29,13 @@
 | 1b-visual-3 | 背景 / 卡片颜色微调（页面纯黑，卡片 `rgb(28, 28, 30)`） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1b-visual-4 | 基础 haptic（tap / selection / success）+ `MockLineChart` vertical gradient（Peak watch 风） | ⏳ 真机过手中 | 本次 | Claude（Elvis 指派） |
 | 1c | ImportService（快捷指令 JSON 导入）+ 最小 PortfolioService persistence | ✅ done + Claude review ✅ | `868f9a0` + `1dd6268` fixup | GPT 主笔 / Claude review |
-| 1d | Networking + portfolio/history 接入 | 待排 | — | Opus |
+| 1d-local | 手动日净值录入 + 持久化（1d-1 数据层） | ✅ 1d-1 done + review pending | 本次 | GPT |
 | 1e | NAV / 雷达图渲染 | 待排 | — | Opus |
 | 1f | Backtest 第一刀 | 待排 | — | Opus |
 | 1g | Widgets 业务化（用 token） | 待排 | — | Opus |
 | **Backend** | | | | |
 | be-α | api.v1.1 落地（按后端 commit `926c912` 反推） | ✅ done | 后端仓 | GPT |
-| be-β | `portfolio/history` 真实化（当前 mock） | 🔜 待排 | — | GPT |
+| be-β | Phase 3 Pro：Networking + `portfolio/history` 真实化（原 1d 推迟） | 🔜 Phase 3 | — | GPT |
 | be-γ | 雷达 / 回测计算服务化 | 待排 | — | GPT |
 | **Meta** | | | | |
 | arch-§8 回填 | xcodegen / iOS 17.4 / Swift 6.0 / bundle id / targets 写进 ARCH §8（v1.3） | ✅ done | 本次 | GPT |
@@ -46,6 +46,7 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-29 · Phase 1d 方向调整：原 “Networking + portfolio/history” 整组推到 Phase 3 Pro 自动化；1.0 收紧为纯本地 JSON 闭环。1d 重新定义为 `1d-local · 手动日净值录入 + 持久化`，本次 1d-1 只落数据层：`FundDailyNAVRecord` / `FundNAVStore` / `FundNAVService` / app unit tests / `fund_nav_minimal` golden fixture。NAV 本地存储使用 `Decimal` 并编码为 4 位字符串；后续算法层若继续按 `Double` 计算，在服务边界转换 · 2026-04-29_ios_phase1d-1-fund-nav-store worklog
 - 2026-04-29 · Claude 关闭 Phase 1c review，✅ 通过。第一轮 ⚠️ 有条件通过提了 4 条必修（baseline 前移 UI 弹窗 / OverviewPanel 假 0 / flow type fallback / store load silent）+ 5 条 Ideas；GPT fixup `1dd6268` 4 条必修全闭合 + 收掉 3/5 Ideas（FileStore round-trip test / merge guard throw / baselineMoved TODO hook），剩两条合理留待后续（fixture README / `enabledOverviewGraphIDs` 升 enum）。`xcodebuild test` 模拟器环境问题不阻塞关闭 · 2026-04-29_ios_phase1c-portfolio-persistence worklog `## Review`
 - 2026-04-29 · Phase 1c review fixup：补 baseline 前移 UI 二次确认；snapshot-only 无法计算指标改为 `待算` 而非 0；删除 flow type `.buy` fallback；本地 store load 失败保留 `loadError` 且默认拒绝覆盖；补 FileStore round-trip 与 load-error 测试。`xcodebuild build` / `build-for-testing` 通过；`xcodebuild test` 当前被 iPhone 17 / 17 Pro 模拟器 Busy/preflight 阻断 · 2026-04-29_ios_phase1c-portfolio-persistence worklog
 - 2026-04-29 · Phase 1c 第二刀完成：`PortfolioService` + 本地 JSON store + JSON import “确认写入” + 持仓页 snapshot 真实数据第一刀。实现 baseline 只能前移不能后移，前移时旧 baseline 降级 checkpoint；flow 按 `(date, code, type, amount, shares)` 去重；本地 persistence 模型预留可选 `enabledOverviewGraphIDs` 承接后续 graph 用户自选裁定，但 1.0 默认 UI 行为仍按 PRD §7.2 9 指标 3×3；新增 3 个 app unit tests 与最小 synthetic fixture 入口 · 2026-04-29_ios_phase1c-portfolio-persistence worklog
@@ -125,8 +126,8 @@
 
 ## 5. 下一步
 
-- **iOS（下一刀，GPT）**：Phase 1d Networking + portfolio/history 接入。开工前确认 Free 不调用自建后端、Pro 才走 `159.75.16.87`（PRD §4.1 红线）；下一次 commit 前重启模拟器跑一次 `xcodebuild test` confirm PortfolioServiceTests 5 个测试都绿。
-- **Backend（GPT）**：`portfolio/history` 真实化（待 GPT 自排时机）
+- **iOS（下一刀，GPT）**：Phase 1d-2：Settings → 数据维护 → 单条手动日净值录入 UI。基金代码从已导入持仓 unique codes 抽取；日期 + 4 位 NAV 表单；列表 / 编辑 / 删除留在同刀或再拆，删除必须确认。
+- **Backend（GPT）**：原 1d Networking + `portfolio/history` 真实化推到 Phase 3 Pro 自动化；1.0 local NAV 闭环期间不动后端 / 网络代码。
 - **Meta**：ARCH §8 回填 ✅ 完成（v1.3）。雷达 v1.1 ✅ 完成。下一个 Meta 任务待 Opus 1b 全部落完时校对 ARCH §3 目录骨架"最终态" vs "已落地"差异。
 - **Phase 1h（新增・暂排）对照线**：1f Backtest 引擎落地后启动。算法 = 反事实重放，UI = `NavCard` 叠加图层。**当前不开工、不催 Elvis 裁 §4 四题** —— 节奏优先于细枝末节；等 1f 进入 in-flight 状态再解冻这四题与 PRD §7.2 增补。Elvis 已确认对照线 × 雷达是北极星，到时不会被其他功能挤掉。
 - **IA 复评观察点**：1c 写入 + 1d 真实数据 + 1h 对照线全落完后，复评持仓 tab 是否仍空旷。若是，先升级流水为独立 sheet（不改 PRD）；仍憋住才考虑 PRD §2 升 3 tab。
