@@ -43,6 +43,7 @@ struct HoldingsView: View {
 #Preview {
     HoldingsView()
         .environmentObject(PortfolioService(store: PortfolioFileStore(fileURL: FileManager.default.temporaryDirectory.appendingPathComponent("holdings-preview.json"))))
+        .environmentObject(FundNAVService(store: FundNAVStore(fileURL: FileManager.default.temporaryDirectory.appendingPathComponent("holdings-nav-preview.json"))))
         .preferredColorScheme(.dark)
 }
 

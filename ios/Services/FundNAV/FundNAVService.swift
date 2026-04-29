@@ -86,6 +86,30 @@ final class FundNAVService: ObservableObject {
         }
     }
 
+    @discardableResult
+    func delete(
+        code: String,
+        date: Date,
+        allowOverwriteAfterLoadFailure: Bool = false
+    ) throws -> Bool {
+        if loadError != nil && !allowOverwriteAfterLoadFailure {
+            throw FundNAVError.storeLoadFailed
+        }
+
+        let nextRecords = records.filter {
+            !FundNAVRecordKey.matches($0, code: code, date: date)
+        }
+        guard nextRecords.count != records.count else {
+            return false
+        }
+
+        let sortedRecords = Self.sorted(nextRecords)
+        try store.save(sortedRecords)
+        records = sortedRecords
+        loadError = nil
+        return true
+    }
+
     private func makeRecord(code: String, date: Date, nav: Decimal) throws -> FundDailyNAVRecord {
         let normalizedCode = FundNAVRecordKey.normalizedCode(code)
         guard !normalizedCode.isEmpty else {

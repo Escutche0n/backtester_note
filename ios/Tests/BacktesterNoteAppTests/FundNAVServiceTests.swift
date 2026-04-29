@@ -105,6 +105,19 @@ final class FundNAVServiceTests: XCTestCase {
         XCTAssertEqual(service.records(for: "510300"), [record])
     }
 
+    func testDeleteRemovesMatchingCodeAndDay() throws {
+        let service = makeService()
+        let targetDate = ImportDateFormatter.parseDay("2024-01-02")!
+        let otherDate = ImportDateFormatter.parseDay("2024-01-03")!
+
+        _ = try service.upsert(code: "510300", date: targetDate, nav: Decimal(string: "4.1234")!)
+        let retained = try service.upsert(code: "510300", date: otherDate, nav: Decimal(string: "4.5678")!)
+
+        XCTAssertTrue(try service.delete(code: "510300", date: targetDate))
+        XCTAssertEqual(service.records(for: "510300"), [retained])
+        XCTAssertFalse(try service.delete(code: "510300", date: targetDate))
+    }
+
     private func makeService() -> FundNAVService {
         FundNAVService(store: FundNAVStore(fileURL: temporaryURL()))
     }

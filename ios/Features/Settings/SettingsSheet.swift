@@ -47,8 +47,13 @@ struct SettingsSheet: View {
 
     private var dataSection: some View {
         Section("数据维护") {
-            SettingsRow(title: "快照 / 流水 / 对账", value: "待核对 2 条", systemImage: "checklist")
-            SettingsRow(title: "官方净值更新", value: "今天 15:32", systemImage: "arrow.triangle.2.circlepath")
+            NavigationLink {
+                DataMaintenanceView()
+            } label: {
+                SettingsRow(title: "手动日净值", value: "录入", systemImage: "calendar.badge.plus")
+            }
+            .buttonStyle(.plain)
+            SettingsRow(title: "快照 / 流水 / 对账", value: "待接入", systemImage: "checklist")
             SettingsRow(title: "盘中估值", value: "手动刷新", systemImage: "clock")
         }
     }
@@ -157,4 +162,5 @@ private struct SettingsRow: View {
 #Preview {
     SettingsSheet()
         .environmentObject(PortfolioService(store: PortfolioFileStore(fileURL: FileManager.default.temporaryDirectory.appendingPathComponent("settings-preview.json"))))
+        .environmentObject(FundNAVService(store: FundNAVStore(fileURL: FileManager.default.temporaryDirectory.appendingPathComponent("settings-nav-preview.json"))))
 }
