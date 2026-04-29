@@ -54,7 +54,9 @@ xcodebuild build-for-testing -project BacktesterNote.xcodeproj -scheme Backteste
 - `swift test`：13 个算法测试通过。
 - `xcodebuild build`：通过。
 - `xcodebuild build-for-testing`：通过，含新增 app unit test target 编译。
-- 开工前与收尾时各跑过 `xcodebuild test`，仍被 iPhone 17 模拟器 `SpringBoard Busy / preflight` 阻断，未进入 XCTest runner；与 1c 收尾现象一致，不是 Swift 编译失败。
+- `xcodebuild test`：最初被 iPhone 17 模拟器 `SpringBoard Busy / preflight` 阻断；按 Elvis 建议执行 `xcrun simctl shutdown all && xcrun simctl erase all` 后重跑通过。
+  - `FundNAVServiceTests`：6 tests passed。
+  - `PortfolioServiceTests`：5 tests passed。
 - 手写代码文件行数均 ≤ 450。
 
 ## Review
