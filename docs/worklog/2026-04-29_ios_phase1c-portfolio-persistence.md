@@ -59,11 +59,17 @@ xcodebuild test -project BacktesterNote.xcodeproj -scheme BacktesterNote \
 
 ## Review
 
-⏳ 等另一方 review，重点看：
+✅ Claude review 关闭（2026-04-29，commit `1dd6268`）：
 
-- `PortfolioService.commit(_:)` 的 baseline 前移 / 后移规则是否符合 PRD §3.1。
-- `PortfolioPreferences.enabledOverviewGraphIDs` 作为可选预留是否足够承接 Elvis 后续 8 vs 9 graph 裁定。
-- 持仓页“真实数据第一刀”是否清楚地区分 snapshot 汇总与仍未接入的 NAV / 雷达 mock。
+第一轮（commit `868f9a0`）⚠️ 有条件通过，提了 4 条必修 + 5 条 Ideas。GPT fixup `1dd6268` 把 4 条必修全部闭合 + 收掉 3/5 Ideas，剩两条（fixture README / `enabledOverviewGraphIDs` 升 enum）合理留待后续。
+
+三个原自查点 ack：
+
+- ✅ `PortfolioService.commit(_:)` baseline 前移 / 后移规则符合 PRD §3.1：service 层后移 throw / 前移降级旧 baseline；UI 层 `previewCommit` dry-run + `confirmationDialog` 文案与 PRD §3.1:75 字面一致（"XIRR 基准日将从 YYYY-MM-DD 改为 YYYY-MM-DD，历史 NAV 曲线会重算，是否继续？"）。
+- ✅ `PortfolioPreferences.enabledOverviewGraphIDs: [String]?` 预留足够承接 Elvis 后续 8 vs 9 graph 三裁定路径，1.0 默认 UI 行为按 PRD §7.2 9 指标 3×3 走，schema 不需回头改。
+- ✅ 持仓页真假分层清楚：`totalValue / unitNAV / holdPnl / holdPct` 走真实 snapshot；其余 9 字段 `Double?` + `"待算"` placeholder；NavCard / RadarCard 整卡保留 mock 结构清楚。
+
+测试环境：`xcodebuild test` 被 iPhone 17 / 17 Pro 模拟器 SpringBoard Busy / preflight 阻断 — 环境问题不是代码问题（`build-for-testing` 通过即编译 OK），不阻塞关闭。下一刀开工前重启模拟器跑一次 confirm 即可。
 
 ### Claude review fixup（2026-04-29）
 
