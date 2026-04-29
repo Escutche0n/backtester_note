@@ -71,8 +71,15 @@ struct MockLineChart: View {
         Path { path in
             guard let first = points.first else { return }
             path.move(to: point(for: first, count: points.count, bounds: bounds, size: size))
+            var previous = first
             for item in points.dropFirst() {
-                path.addLine(to: point(for: item, count: points.count, bounds: bounds, size: size))
+                let nextPoint = point(for: item, count: points.count, bounds: bounds, size: size)
+                if item.index - previous.index > 1 {
+                    path.move(to: nextPoint)
+                } else {
+                    path.addLine(to: nextPoint)
+                }
+                previous = item
             }
         }
     }
@@ -89,7 +96,7 @@ struct MockLineChart: View {
     }
 
     private func point(for item: ChartPoint, count: Int, bounds: ChartBounds, size: CGSize) -> CGPoint {
-        let denominator = max(count - 1, 1)
+        let denominator = max((series + benchmark).map(\.index).max() ?? count - 1, 1)
         let x = CGFloat(item.index) / CGFloat(denominator) * size.width
         let y = yPosition(for: item.value, bounds: bounds, height: size.height)
         return CGPoint(x: x, y: y)
