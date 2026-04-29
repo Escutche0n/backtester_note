@@ -40,7 +40,7 @@ enum NAVService {
             account: account,
             baselineDate: baselineDate,
             navByCodeDate: navByCodeDate
-        ))).sorted()
+        )))
         let cutoffDate = flowDatesWithoutValuation
             .compactMap(ImportDateFormatter.parseDay)
             .min()

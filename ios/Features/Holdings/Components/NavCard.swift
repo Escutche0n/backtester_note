@@ -174,16 +174,17 @@ struct NavCard: View {
     }
 
     private func statusText(for series: AccountNAVSeries, visiblePoints: [AccountNAVPoint]) -> String? {
-        if !series.flowOnlyDateKeys.isEmpty {
-            return "仅流水 \(series.flowOnlyDateKeys.count) 天"
+        var parts: [String] = []
+        if visiblePoints.contains(where: { $0.credibility == .snapshotOnly }) {
+            parts.append("含快照")
         }
         if !series.missingValuationDateKeys.isEmpty {
-            return "缺净值 \(series.missingValuationDateKeys.count) 天"
+            parts.append("缺净值 \(series.missingValuationDateKeys.count) 天")
         }
-        if visiblePoints.contains(where: { $0.credibility == .snapshotOnly }) {
-            return "含快照"
+        if !series.flowOnlyDateKeys.isEmpty {
+            parts.append("仅流水 \(series.flowOnlyDateKeys.count) 天")
         }
-        return nil
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
 
     private func excessText(lastAccount: Double?, lastBenchmark: Double?) -> String {
