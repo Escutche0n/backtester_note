@@ -101,7 +101,14 @@ enum ImportService {
         }
 
         let duplicateKeys = Dictionary(grouping: account.flows) { flow in
-            "\(account.accountID):\(flow.code):\(ImportDateFormatter.dayString(flow.date)):\(flow.type.rawValue)"
+            [
+                account.accountID,
+                flow.code,
+                ImportDateFormatter.dayString(flow.date),
+                flow.type.rawValue,
+                String(format: "%.2f", flow.amount),
+                String(format: "%.4f", flow.shares)
+            ].joined(separator: ":")
         }
         .filter { $0.value.count > 1 }
 

@@ -156,4 +156,5 @@ private struct SettingsRow: View {
 
 #Preview {
     SettingsSheet()
+        .environmentObject(PortfolioService(store: PortfolioFileStore(fileURL: FileManager.default.temporaryDirectory.appendingPathComponent("settings-preview.json"))))
 }

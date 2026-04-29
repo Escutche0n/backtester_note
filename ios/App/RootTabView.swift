@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct RootTabView: View {
+    @StateObject private var portfolioService = PortfolioService()
+
     var body: some View {
         TabView {
             HoldingsView()
@@ -15,6 +17,7 @@ struct RootTabView: View {
         }
         .tint(BNTokens.Colors.foregroundPrimary)
         .preferredColorScheme(.dark)
+        .environmentObject(portfolioService)
     }
 }
 

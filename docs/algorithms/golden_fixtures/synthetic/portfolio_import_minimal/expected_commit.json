@@ -1,0 +1,15 @@
+{
+  "account_count": 1,
+  "inserted_snapshots": 1,
+  "updated_snapshots": 0,
+  "inserted_flows": 1,
+  "skipped_flows_on_second_import": 1,
+  "baseline_date": "2024-01-01",
+  "nav_credibility_states": [
+    "confirmed",
+    "pending_reconcile",
+    "intraday_estimate",
+    "snapshot_only",
+    "flow_only"
+  ]
+}

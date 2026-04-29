@@ -2,6 +2,10 @@ import SwiftUI
 
 struct ImportPreviewView: View {
     let preview: ImportPreview
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var portfolioService: PortfolioService
+    @State private var commitSummary: PortfolioCommitSummary?
+    @State private var commitError: String?
 
     var body: some View {
         NavigationStack {
@@ -23,6 +27,11 @@ struct ImportPreviewView: View {
             .background(BNTokens.Colors.backgroundElevated)
             .navigationTitle("导入预览")
             .preferredColorScheme(.dark)
+            .alert("写入失败", isPresented: commitErrorBinding) {
+                Button("知道了", role: .cancel) {}
+            } message: {
+                Text(commitError ?? "")
+            }
         }
     }
 
@@ -80,12 +89,63 @@ struct ImportPreviewView: View {
 
     private var commitSection: some View {
         Section {
-            Button("确认写入（Persistence 待 1d 接入）") {}
-                .disabled(true)
+            if let commitSummary {
+                commitResult(summary: commitSummary)
+            } else {
+                Button("确认写入") {
+                    BNHaptics.success()
+                    commitPreview()
+                }
+                .disabled(!preview.canCommit)
+            }
         } footer: {
-            Text("本阶段只做预览与校验，不写入持久化存储。")
+            Text("确认后会写入本机 PortfolioService；预览阶段不会改动本地数据。")
         }
         .listRowBackground(BNTokens.Colors.surface)
+    }
+
+    private func commitResult(summary: PortfolioCommitSummary) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("已写入")
+                .font(BNTokens.Typography.text(size: 15))
+                .foregroundStyle(BNTokens.Colors.foregroundPrimary)
+
+            Text("新增快照 \(summary.insertedSnapshots)，更新快照 \(summary.updatedSnapshots)，新增流水 \(summary.insertedFlows)，跳过重复流水 \(summary.skippedFlows)")
+                .bnNumeric(12)
+                .foregroundStyle(BNTokens.Colors.foregroundSecondary)
+
+            if summary.baselineMoved,
+               let oldDate = summary.oldBaselineDate,
+               let newDate = summary.newBaselineDate {
+                Text("XIRR 基准日 \(ImportDateFormatter.dayString(oldDate)) → \(ImportDateFormatter.dayString(newDate))")
+                    .bnNumeric(12)
+                    .foregroundStyle(BNTokens.Colors.accent)
+            }
+
+            Button("完成") {
+                dismiss()
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var commitErrorBinding: Binding<Bool> {
+        Binding(
+            get: { commitError != nil },
+            set: { isPresented in
+                if !isPresented {
+                    commitError = nil
+                }
+            }
+        )
+    }
+
+    private func commitPreview() {
+        do {
+            commitSummary = try portfolioService.commit(preview)
+        } catch {
+            commitError = error.localizedDescription
+        }
     }
 }
 
@@ -115,6 +175,13 @@ struct ImportPreviewView: View {
               }]
             }
             """.data(using: .utf8)!
+        )
+    )
+    .environmentObject(
+        PortfolioService(
+            store: PortfolioFileStore(
+                fileURL: FileManager.default.temporaryDirectory.appendingPathComponent("preview.json")
+            )
         )
     )
 }

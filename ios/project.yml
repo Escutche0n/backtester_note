@@ -69,6 +69,19 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         SKIP_INSTALL: YES
 
+  BacktesterNoteTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "17.4"
+    sources:
+      - path: Tests/BacktesterNoteAppTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chenyuefu.backtester-note.tests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: BacktesterNote
+
 schemes:
   BacktesterNote:
     build:
@@ -79,6 +92,8 @@ schemes:
       config: Debug
     test:
       config: Debug
+      targets:
+        - BacktesterNoteTests
     archive:
       config: Release
   BacktesterNoteWidgets:

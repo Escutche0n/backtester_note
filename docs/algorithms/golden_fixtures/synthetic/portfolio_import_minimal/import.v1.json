@@ -1,0 +1,36 @@
+{
+  "schema": "backtester-note/import/v1",
+  "exported_at": "2026-04-25T00:00:00+08:00",
+  "source": "user_manual",
+  "accounts": [
+    {
+      "account_id": "default",
+      "display_name": "主账户",
+      "currency": "CNY",
+      "snapshots": [
+        {
+          "date": "2024-01-01",
+          "is_baseline": true,
+          "holdings": [
+            {
+              "code": "510300",
+              "name": "沪深300ETF",
+              "shares": 1000,
+              "value": 4200
+            }
+          ]
+        }
+      ],
+      "flows": [
+        {
+          "date": "2024-02-01",
+          "code": "510300",
+          "type": "buy",
+          "amount": 500,
+          "shares": 100,
+          "fee": 0
+        }
+      ]
+    }
+  ]
+}
