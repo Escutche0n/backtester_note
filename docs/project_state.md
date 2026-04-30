@@ -8,8 +8,8 @@
 ## 0. 元信息
 
 - 文件版本：v1
-- 上次更新：2026-04-29
-- 上次更新者：GPT（Phase 1d-3 NavCard local NAV）
+- 上次更新：2026-04-30
+- 上次更新者：Claude（Phase 1d-3 review polish + Phase 1d-4 manual account entry）
 
 ---
 
@@ -29,7 +29,8 @@
 | 1b-visual-3 | 背景 / 卡片颜色微调（页面纯黑，卡片 `rgb(28, 28, 30)`） | ✅ done | 本次 | GPT（Elvis 指派） |
 | 1b-visual-4 | 基础 haptic（tap / selection / success）+ `MockLineChart` vertical gradient（Peak watch 风） | ⏳ 真机过手中 | 本次 | Claude（Elvis 指派） |
 | 1c | ImportService（快捷指令 JSON 导入）+ 最小 PortfolioService persistence | ✅ done + Claude review ✅ | `868f9a0` + `1dd6268` fixup | GPT 主笔 / Claude review |
-| 1d-local | 手动日净值录入 + 持久化 + NavCard 本地曲线 | ✅ 1d-3 done, review pending | `610f591` + 本次 | GPT |
+| 1d-local | 手动日净值录入 + 持久化 + NavCard 本地曲线 | ✅ 1d-3 done + Claude review polish ✅ | `610f591` → `f77c91a` review fixup | GPT 主笔 / Claude review |
+| 1d-4 | 手动建 baseline 账户表单（绕开 JSON import 兜底入口） | ✅ done, Codex review pending | `cb2593c` | Claude |
 | 1e | NAV / 雷达图渲染 | 待排 | — | Opus |
 | 1f | Backtest 第一刀 | 待排 | — | Opus |
 | 1g | Widgets 业务化（用 token） | 待排 | — | Opus |
@@ -46,6 +47,8 @@
 
 > 时间倒序，一行一条：日期 · 决议 · 出处。这是散落在各 worklog 的"凡定不再翻"事项的聚合视图。新决议追加在表头。
 
+- 2026-04-30 · Phase 1d-4 完成：补 Phase 1 漏掉的"手动建 baseline 账户"反向兜底入口。Settings → 持仓快照 进入表单录入账户名 / 基线日期 / 持仓行（代码 / 名称 / 份额 / 市值 / nav），表单产出 `backtester-note/import/v1` JSON Data 后走和 file import 完全一致的 `ImportService.preview → PortfolioService.commit` 路径——零校验逻辑重复、复用 baseline 前移语义。已建账户后整页切只读，编辑/追加流水留待后续。新增 6 个 ManualAccountEntryDraftTests，App 层测试 16 → 22 全绿。无契约 / 算法 / 权能改动 · 2026-04-29_ios_phase1d-4-manual-account-entry worklog
+- 2026-04-30 · Phase 1d-3 review polish：NavCard `statusText` 从互斥 if/else if/else 改为可叠加（`含快照 · 缺净值 N 天 · 仅流水 N 天`），与 1d-3 worklog 描述一致；删 `AccountNAVSeries.flowOnlyDateKeys` 多余的 `.sorted()`（返回前已 sort）。22 cases 仍全绿 · `f77c91a` commit
 - 2026-04-29 · Phase 1d-3 完成：新增账户级 `NAVService`，用 baseline snapshot / flows + 手动基金日净值组装 `NAVInput`，复用既有 `NAVCalculator`；`NavCard` 有真实账户时消费本地 NAV 曲线，缺日净值 / 仅流水 / snapshot-only 均显式提示，不再用 mock 掩盖已有账户缺数据；沪深300未接入前显示「基准待接入 / 超额待算」 · 2026-04-29_ios_phase1d-3-navcard-local-nav worklog
 - 2026-04-29 · Phase 1d-2 完成：Settings → 数据维护新增「手动日净值」入口；基金代码从已导入持仓 / 流水 unique codes 抽取；支持日期 + 4 位 Decimal NAV 单条录入、同日覆盖、列表回填编辑、删除确认；`FundNAVService` 补 `delete(code:date:)` 并新增删除单测。未接入 NavCard / NAV 算法，1d-3 继续 · 2026-04-29_ios_phase1d-2-nav-maintenance-ui worklog
 - 2026-04-29 · Phase 1d-1 review fixup：`fund_nav_minimal/fund_nav.v1.json` 改为与 `FundNAVService` 写盘一致的 code/date 升序；`expected.json` 重命名 `metadata.json` 避免误解为 round-trip output；补损坏 store 经显式允许后覆盖写入并清空 `loadError` 的测试 · 2026-04-29_ios_phase1d-1-fund-nav-store worklog `## Review`
@@ -109,6 +112,10 @@
 
 > 只列**尚未裁定**的；裁定后挪到 §2 决议簿。
 
+**待 Elvis 裁定（1d-4 手动建账延伸题）**：
+- (Q1) 多账户范围：v1 是否就允许 2-3 个账户，还是先锁单账户、Pro 再放？1d-4 当前按"单账户优先"实现（已建 1 个账户后表单切只读）；PRD §3.1 未显式收口。
+- (Q2) 编辑现有 baseline 入口：放在同一个 ManualAccountEntryView 加"编辑"模式（同 date 走 upsert / 不同 date 走 baselineMoved），还是只允许 JSON 导入修改？倾向前者（1d-5 候选），因为表单已在、边际成本低。
+
 - **持仓页 graph 数量与"用户自选"路径**（2026-04-29 Claude review 升级）：scope §7 "8 graph" 与 PRD §7.2 冻结的 `OverviewPanel` "9 指标 3×3 网格" 冲突。Elvis 2026-04-29 口头倾向"可让用户自选 graph、不强制 3×3"。待裁定项：
   - (a) 直接改 PRD §7.2：`OverviewPanel` 改为"用户自选 N 项，默认 8"，3×3 网格降级为"默认布局"；或
   - (b) scope 注脚说明"以 PRD §7.2 9 指标 3×3 为准、用户自选作为 1.0 之后增量"，本期不动；或
@@ -130,7 +137,11 @@
 
 ## 5. 下一步
 
-- **iOS（下一刀，GPT）**：Phase 1e-1：基于本地 `AccountNAVSeries` 接 Overview / Radar 的第一批真实指标；不可算指标继续显示 `待算`，不得静默填 0。
+- **iOS（候选下一刀）**：
+  - **1d-5（小）**：在同一表单基础上加"为当前账户追加流水"入口（buy/sell/dividend），日常增量也脱离 JSON 导入。
+  - **1d-6（中）**：编辑/删除现有 baseline 与 holdings；处理"baseline 不能删"红线下的 explainable 错误。
+  - **1e-1（大）**：基于本地 `AccountNAVSeries` 接 Overview / Radar 的第一批真实指标；不可算指标继续显示 `待算`，不得静默填 0。
+  - 顺序待 Elvis 裁 §4 Q1/Q2 后定。
 - **Backend（GPT）**：原 1d Networking + `portfolio/history` 真实化推到 Phase 3 Pro 自动化；1.0 local NAV 闭环期间不动后端 / 网络代码。
 - **Meta**：ARCH §8 回填 ✅ 完成（v1.3）。雷达 v1.1 ✅ 完成。下一个 Meta 任务待 Opus 1b 全部落完时校对 ARCH §3 目录骨架"最终态" vs "已落地"差异。
 - **Phase 1h（新增・暂排）对照线**：1f Backtest 引擎落地后启动。算法 = 反事实重放，UI = `NavCard` 叠加图层。**当前不开工、不催 Elvis 裁 §4 四题** —— 节奏优先于细枝末节；等 1f 进入 in-flight 状态再解冻这四题与 PRD §7.2 增补。Elvis 已确认对照线 × 雷达是北极星，到时不会被其他功能挤掉。
